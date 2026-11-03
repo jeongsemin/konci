@@ -3,6 +3,8 @@
 
 export type Sort = "relevance" | "rating" | "reviews";
 export const MAX_COMPARE = 3;
+export const PAGE_SIZE = 10;
+const MAX_PAGE = 1000;
 
 export type Filters = {
   q: string;
@@ -13,6 +15,7 @@ export type Filters = {
   english: boolean;
   director: boolean;
   sort: Sort;
+  page: number; // 1-based
   compare: string[];
 };
 
@@ -27,6 +30,11 @@ function oneOf<T extends number>(value: string, allowed: readonly T[], fallback:
   return (allowed as readonly number[]).includes(n) ? (n as T) : fallback;
 }
 
+function pageNumber(value: string): number {
+  const n = Number(value);
+  return Number.isInteger(n) && n >= 1 ? Math.min(n, MAX_PAGE) : 1;
+}
+
 export function parseParams(sp: Raw): Filters {
   const sort = first(sp.sort);
   return {
@@ -38,6 +46,7 @@ export function parseParams(sp: Raw): Filters {
     english: first(sp.english) === "1",
     director: first(sp.director) === "1",
     sort: sort === "rating" || sort === "reviews" ? sort : "relevance",
+    page: pageNumber(first(sp.page)),
     compare: [...new Set(first(sp.compare).split(","))].filter((id) => UUID.test(id)).slice(0, MAX_COMPARE),
   };
 }
@@ -53,15 +62,47 @@ export function toQueryString(f: Filters): string {
   if (f.english) p.set("english", "1");
   if (f.director) p.set("director", "1");
   if (f.sort !== "relevance") p.set("sort", f.sort);
+  if (f.page > 1) p.set("page", String(f.page));
   if (f.compare.length) p.set("compare", f.compare.join(","));
   const s = p.toString();
   return s ? `?${s}` : "";
 }
 
-/** What we send to Naver: area + treatment + free text, as one phrase. */
+/**
+ * The areas offered in the filter, as real locations. They are matched against the
+ * hospital's city, district and neighbourhood, never against its name (a clinic called
+ * "강남…" in another district is not in 강남).
+ */
+export type AreaSpec = { sido: string; sgg?: string; dongs?: string[] };
+
+const AREAS: Record<string, AreaSpec> = {
+  강남: { sido: "서울", sgg: "강남구" },
+  명동: { sido: "서울", sgg: "중구", dongs: ["명동"] },
+  홍대: { sido: "서울", sgg: "마포구", dongs: ["서교동", "동교동", "연남동", "합정동", "상수동"] },
+  부산: { sido: "부산" },
+};
+
+export const areaSpec = (area: string): AreaSpec | null => (Object.hasOwn(AREAS, area) ? AREAS[area] : null);
+
+/**
+ * The words to look for in a hospital's name or address: treatment plus free text.
+ * A known area is a location filter instead; an unknown one (typed into the URL) is just a word.
+ */
 export function composeQuery(f: Filters): { query: string; type: "all" | "derm" } {
-  const query = [f.area, f.treatment, f.q].filter(Boolean).join(" ").trim();
+  const query = [areaSpec(f.area) ? "" : f.area, f.treatment, f.q].filter(Boolean).join(" ").trim();
   return { query, type: f.treatment || f.q.includes("피부과") ? "derm" : "all" };
+}
+
+/** The phrase for the page title: a known area (under its display name) plus the words searched. */
+export function displayQuery(f: Filters, areaName = f.area): string {
+  return [areaSpec(f.area) ? areaName : "", composeQuery(f).query].filter(Boolean).join(" ");
+}
+
+/** Page numbers to show: always the first and last, the current page and its neighbours, with `null` for a gap. */
+export function pageWindow(current: number, total: number): (number | null)[] {
+  const wanted = new Set([1, total, current - 1, current, current + 1]);
+  const pages = [...wanted].filter((p) => p >= 1 && p <= total).sort((a, b) => a - b);
+  return pages.flatMap((p, i) => (i > 0 && p - pages[i - 1] > 1 ? [null, p] : [p]));
 }
 
 /** Words for matching known hospitals; drops characters that are special in PostgREST filters. */
@@ -71,31 +112,6 @@ export function searchTokens(q: string, max = 4): string[] {
     .split(/\s+/)
     .filter(Boolean)
     .slice(0, max);
-}
-
-export type Searchable = {
-  review_count: number;
-  avg_rating: number | null;
-  fluent_english_count: number;
-  director_count: number;
-};
-
-export function applyFilters<T extends Searchable>(results: T[], f: Filters): T[] {
-  return results.filter(
-    (r) =>
-      (!f.rating || (r.avg_rating ?? 0) >= f.rating / 10) &&
-      r.review_count >= f.reviews &&
-      (!f.english || r.fluent_english_count > 0) &&
-      (!f.director || r.director_count > 0),
-  );
-}
-
-export function sortResults<T extends Searchable>(results: T[], sort: Sort): T[] {
-  if (sort === "relevance") return results;
-  const copy = [...results];
-  if (sort === "rating") copy.sort((a, b) => (b.avg_rating ?? -1) - (a.avg_rating ?? -1) || b.review_count - a.review_count);
-  else copy.sort((a, b) => b.review_count - a.review_count || (b.avg_rating ?? -1) - (a.avg_rating ?? -1));
-  return copy;
 }
 
 export function toggleCompare(f: Filters, id: string): Filters {

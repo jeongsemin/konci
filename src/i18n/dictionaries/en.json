@@ -201,7 +201,7 @@
     "viewDetail": "View details",
     "compare": "Compare",
     "compareOn": "Selected",
-    "end": "That's all {n} results · Clinic information is based on Naver Maps search.",
+    "end": "Clinic information is based on public data from the Health Insurance Review & Assessment Service (HIRA).",
     "prompt": "Enter an area or clinic name to search.",
     "empty": "No clinics match. Try fewer filters, another area, or a Korean name.",
     "error": "Search failed. Please try again in a moment.",
@@ -236,6 +236,11 @@
       "checkBody": "Reviews are personal experiences. Confirm treatment suitability, total cost, side effects and language support with the clinic.",
       "rankTitle": "Search ranking",
       "rankBody": "Results follow Naver Maps search order. There is no paid placement."
+    },
+    "pager": {
+      "label": "Pagination",
+      "prev": "Previous page",
+      "next": "Next page"
     }
   },
   "login": {

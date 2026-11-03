@@ -1,15 +1,18 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Check, Info, MapPin, SlidersHorizontal, Square, SquareCheck, X } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Info, MapPin, SlidersHorizontal, Square, SquareCheck, X } from "lucide-react";
 import { hasLocale, type Locale } from "@/i18n/config";
 import { getDictionary, type Dictionary } from "@/i18n/dictionaries";
 import { searchHospitals, type SearchResult } from "@/lib/hospital-search";
+import { categoryLine, regionLabel } from "@/lib/region";
 import {
+  PAGE_SIZE,
   aggregateReviews,
-  applyFilters,
+  areaSpec,
   composeQuery,
+  displayQuery,
+  pageWindow,
   parseParams,
-  sortResults,
   toQueryString,
   toggleCompare,
   type CompareStats,
@@ -25,13 +28,13 @@ import { pageMetadata } from "@/lib/seo";
 const fill = (template: string, values: Record<string, string | number>) =>
   template.replace(/\{(\w+)\}/g, (_, key) => String(values[key] ?? ""));
 
-type CompareHospital = { id: string; name: string; address: string; stats: CompareStats };
+type CompareHospital = { id: string; name: string; region: string | null; address: string; stats: CompareStats };
 
 async function loadCompare(ids: string[]): Promise<CompareHospital[]> {
   if (ids.length === 0) return [];
   const supabase = await createClient();
   const [{ data: hospitals }, { data: reviews }] = await Promise.all([
-    supabase.from("hospitals").select("id, name, road_address, address").in("id", ids),
+    supabase.from("hospitals").select("id, name, road_address, address, sido, sgg").in("id", ids),
     supabase
       .from("reviews")
       .select("hospital_id, rating, english_support, interpreter_available, director_consultation, price_explained, no_upselling")
@@ -41,7 +44,7 @@ async function loadCompare(ids: string[]): Promise<CompareHospital[]> {
     const h = hospitals?.find((x) => x.id === id);
     if (!h) return [];
     const rows = ((reviews ?? []) as ReviewRow[]).filter((r) => r.hospital_id === id);
-    return [{ id, name: h.name, address: h.road_address || h.address || "", stats: aggregateReviews(rows) }];
+    return [{ id, name: h.name, region: regionLabel(h.sido, h.sgg), address: h.road_address || h.address || "", stats: aggregateReviews(rows) }];
   });
 }
 
@@ -49,11 +52,11 @@ export async function generateMetadata({ params, searchParams }: PageProps<"/[la
   const { lang } = await params;
   if (!hasLocale(lang)) return {};
   const dict = await getDictionary(lang);
-  const { query } = composeQuery(parseParams(await searchParams));
+  const phrase = displayQuery(parseParams(await searchParams));
   return pageMetadata({
     lang,
     path: "/search",
-    title: query ? fill(dict.search.title, { q: query }) : dict.search.titleEmpty,
+    title: phrase ? fill(dict.search.title, { q: phrase }) : dict.search.titleEmpty,
     description: dict.search.subtitle,
     noindex: true,
     follow: true,
@@ -68,14 +71,20 @@ export default async function SearchPage({ params, searchParams }: PageProps<"/[
   const f = parseParams(await searchParams);
 
   const { query, type } = composeQuery(f);
-  const outcome = query ? await searchHospitals(query, type) : { results: [] as SearchResult[], error: undefined };
-  const results = sortResults(applyFilters(outcome.results, f), f.sort);
+  const searched = Boolean(query || areaSpec(f.area));
+  const outcome = searched
+    ? await searchHospitals({ q: query, type, area: f.area, rating: f.rating, reviews: f.reviews, english: f.english, director: f.director, sort: f.sort, page: f.page })
+    : { results: [] as SearchResult[], total: 0, page: 1, error: undefined };
+  const results = outcome.results;
+  const totalPages = Math.max(1, Math.ceil(outcome.total / PAGE_SIZE));
   const compare = await loadCompare(f.compare);
 
-  const href = (patch: Partial<Filters>) => `/${lang}/search${toQueryString({ ...f, ...patch })}`;
+  // Changing a filter or the sort goes back to page 1; the compare links and the pager keep where you are.
+  const href = (patch: Partial<Filters>) => `/${lang}/search${toQueryString({ ...f, page: 1, ...patch })}`;
   const reset: Partial<Filters> = { area: "", treatment: "", rating: 0, reviews: 0, english: false, director: false };
 
   const label = (items: { name: string; q: string }[], q: string) => items.find((i) => i.q === q)?.name ?? q;
+  const phrase = displayQuery(f, label(dict.home.areas.items, f.area));
   const chips: { key: string; text: string; patch: Partial<Filters> }[] = [
     f.area && { key: "area", text: label(dict.home.areas.items, f.area), patch: { area: "" } },
     f.treatment && { key: "treatment", text: label(dict.home.treatments.items, f.treatment), patch: { treatment: "" } },
@@ -102,7 +111,7 @@ export default async function SearchPage({ params, searchParams }: PageProps<"/[
           <p className="whitespace-pre text-[11px] text-muted">{t.breadcrumb}</p>
           <div className="space-y-2">
             <h1 className="text-2xl font-bold leading-snug md:text-[30px]">
-              {query ? fill(t.title, { q: query }) : t.titleEmpty}
+              {phrase ? fill(t.title, { q: phrase }) : t.titleEmpty}
             </h1>
             <p className="text-sm text-muted">{t.subtitle}</p>
           </div>
@@ -137,7 +146,7 @@ export default async function SearchPage({ params, searchParams }: PageProps<"/[
 
         <div className="min-w-0 space-y-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm font-bold">{fill(t.count, { n: results.length })}</p>
+            <p className="text-sm font-bold">{fill(t.count, { n: outcome.total })}</p>
             <p className="flex items-center gap-3 text-xs text-muted">
               <span>{t.sortLabel}</span>
               {(["relevance", "rating", "reviews"] as const).map((s) => (
@@ -154,7 +163,7 @@ export default async function SearchPage({ params, searchParams }: PageProps<"/[
           </div>
 
           <div aria-live="polite" className="space-y-4">
-            {!query ? (
+            {!searched ? (
               <p className="text-sm text-muted">{t.prompt}</p>
             ) : outcome.results.length === 0 && outcome.error ? (
               <p className="text-sm text-error">{t.error}</p>
@@ -163,17 +172,25 @@ export default async function SearchPage({ params, searchParams }: PageProps<"/[
             ) : (
               <ul className="space-y-4">
                 {results.map((r) => (
-                  <ResultCard key={r.id} r={r} lang={lang} dict={dict} selected={f.compare.includes(r.id)} toggleHref={href({ compare: toggleCompare(f, r.id).compare })} />
+                  <ResultCard key={r.id} r={r} lang={lang} dict={dict} selected={f.compare.includes(r.id)} toggleHref={href({ compare: toggleCompare(f, r.id).compare, page: outcome.page })} />
                 ))}
               </ul>
             )}
           </div>
 
-          {results.length > 0 && (
-            <p className="text-[11px] text-muted">{fill(t.end, { n: results.length })}</p>
-          )}
+          <Pager dict={dict} page={outcome.page} totalPages={totalPages} hrefFor={(p) => href({ page: p })} />
 
-          {compare.length >= 2 && <ComparePanel lang={lang} dict={dict} items={compare} clearHref={href({ compare: [] })} removeHref={(id) => href({ compare: f.compare.filter((x) => x !== id) })} />}
+          {results.length > 0 && <p className="text-[11px] text-muted">{t.end}</p>}
+
+          {compare.length >= 2 && (
+            <ComparePanel
+              lang={lang}
+              dict={dict}
+              items={compare}
+              clearHref={href({ compare: [], page: outcome.page })}
+              removeHref={(id) => href({ compare: f.compare.filter((x) => x !== id), page: outcome.page })}
+            />
+          )}
         </div>
 
         <aside className="space-y-5 lg:col-span-2 xl:col-span-1">
@@ -184,9 +201,20 @@ export default async function SearchPage({ params, searchParams }: PageProps<"/[
             ) : (
               <ul className="space-y-1 text-[13px]">
                 {compare.map((c) => (
-                  <li key={c.id} className="flex items-center gap-2">
-                    <SquareCheck className="size-4 shrink-0 text-brand" aria-hidden />
-                    {c.name}
+                  <li key={c.id}>
+                    {/* Unticking removes it from the selection, so the choice can be changed from here too. */}
+                    <Link
+                      href={href({ compare: f.compare.filter((x) => x !== c.id), page: outcome.page })}
+                      scroll={false}
+                      aria-pressed
+                      className="flex min-h-8 items-center gap-2 hover:text-brand"
+                    >
+                      <SquareCheck className="size-4 shrink-0 text-brand" aria-hidden />
+                      <span>
+                        {c.name}
+                        {c.region && <span className="text-muted"> · {c.region}</span>}
+                      </span>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -207,6 +235,44 @@ export default async function SearchPage({ params, searchParams }: PageProps<"/[
         </aside>
       </Container>
     </>
+  );
+}
+
+function Pager({ dict, page, totalPages, hrefFor }: { dict: Dictionary; page: number; totalPages: number; hrefFor: (page: number) => string }) {
+  if (totalPages <= 1) return null;
+  const t = dict.search.pager;
+  const box = "flex size-10 items-center justify-center rounded-sm border text-sm font-bold";
+  const arrow = (target: number, enabled: boolean, text: string, icon: React.ReactNode) =>
+    enabled ? (
+      <Link href={hrefFor(target)} aria-label={text} className={`${box} border-border bg-card text-brand hover:border-brand`}>
+        {icon}
+      </Link>
+    ) : (
+      <span aria-hidden className={`${box} border-border bg-surface text-muted opacity-50`}>
+        {icon}
+      </span>
+    );
+  return (
+    <nav aria-label={t.label} className="flex flex-wrap items-center justify-center gap-2">
+      {arrow(page - 1, page > 1, t.prev, <ChevronLeft className="size-4" aria-hidden />)}
+      {pageWindow(page, totalPages).map((p, i) =>
+        p === null ? (
+          <span key={`gap-${i}`} aria-hidden className="px-1 text-muted">
+            …
+          </span>
+        ) : (
+          <Link
+            key={p}
+            href={hrefFor(p)}
+            aria-current={p === page ? "page" : undefined}
+            className={`${box} ${p === page ? "border-brand bg-brand text-white" : "border-border bg-card hover:border-brand"}`}
+          >
+            {p}
+          </Link>
+        ),
+      )}
+      {arrow(page + 1, page < totalPages, t.next, <ChevronRight className="size-4" aria-hidden />)}
+    </nav>
   );
 }
 
@@ -294,9 +360,10 @@ function ResultCard({ r, lang, dict, selected, toggleHref }: { r: SearchResult; 
     r.fluent_english_count > 0 && `${dict.hospital.englishFluent} ${r.fluent_english_count}`,
     r.director_count > 0 && `${dict.hospital.director} ${r.director_count}`,
   ].filter(Boolean) as string[];
+  const kind = categoryLine(r.category, r.sido, r.sgg);
   return (
     <li className={`space-y-3 rounded-md border bg-card p-5 ${selected ? "border-brand" : "border-border"}`}>
-      {r.category && <p className="text-[10px] font-bold text-brand">{r.category}</p>}
+      {kind && <p className="text-[10px] font-bold text-brand">{kind}</p>}
       <h2 className="text-[19px] font-bold leading-snug">
         <Link href={`/${lang}/hospitals/${r.id}`} className="hover:text-brand">
           {r.name}
@@ -353,6 +420,7 @@ function ComparePanel({ lang, dict, items, clearHref, removeHref }: { lang: Loca
         {items.map((i) => (
           <div key={i.id} className="space-y-1">
             <p className="text-[15px] font-bold">{i.name}</p>
+            {i.region && <p className="text-xs text-muted">{i.region}</p>}
             <Link href={removeHref(i.id)} scroll={false} className="text-[11px] text-muted hover:text-foreground">
               {c.remove}
             </Link>

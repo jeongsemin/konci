@@ -1,7 +1,8 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { MEDICAL_TYPES } from "@/lib/hira";
 import { isMedical, toCandidate, type NaverLocalItem } from "@/lib/naver-local";
-import { searchTokens } from "@/lib/search-params";
+import { PAGE_SIZE, areaSpec, searchTokens, type Sort } from "@/lib/search-params";
 
 export type SearchType = "all" | "derm";
 
@@ -11,22 +12,41 @@ export type SearchResult = {
   category: string | null;
   address: string | null;
   road_address: string | null;
+  sido: string | null;
+  sgg: string | null;
   review_count: number;
   avg_rating: number | null;
   fluent_english_count: number;
   director_count: number;
 };
 
+export type SearchInput = {
+  /** Words that must each appear in the name or address. */
+  q: string;
+  type: SearchType;
+  /** A key of the area filter (강남, 명동, …). */
+  area?: string;
+  /** Minimum average rating x10. */
+  rating?: number;
+  reviews?: number;
+  english?: boolean;
+  director?: boolean;
+  sort?: Sort;
+  page?: number;
+};
+
 export type SearchOutcome = {
   results: SearchResult[];
+  /** Hospitals matching all the filters, across every page. */
+  total: number;
+  /** The page actually returned (a page past the end falls back to the first). */
+  page: number;
   /** Set when Naver (or the DB) failed; `results` may still hold DB matches. */
   error?: "not_configured" | "upstream" | "db";
 };
 
 const KEYWORD: Record<SearchType, string> = { all: "병원", derm: "피부과" };
-const BASE_COLUMNS = "id, name, category, address, road_address";
-
-type Base = Omit<SearchResult, "review_count" | "avg_rating" | "fluent_english_count" | "director_count">;
+const COLUMNS = "id, name, category, address, road_address, sido, sgg, review_count, avg_rating, fluent_english_count, director_count";
 
 async function fromNaver(q: string, type: SearchType): Promise<{ items: NaverLocalItem[] } | { error: "not_configured" | "upstream" }> {
   const id = process.env.NAVER_SEARCH_CLIENT_ID;
@@ -54,66 +74,72 @@ async function fromNaver(q: string, type: SearchType): Promise<{ items: NaverLoc
 }
 
 /**
- * Searches Naver Local Search (upserting the medical hits into `hospitals`) and
- * merges hospitals we already know by name/address, so results survive a Naver outage.
+ * Looks hospitals up in our own table (filled from the HIRA public data), one page at a time.
+ * On the first page it also asks Naver and adds any medical hits it returns to the table,
+ * so a clinic missing from the public data can still be found.
  */
-export async function searchHospitals(rawQuery: string, type: SearchType): Promise<SearchOutcome> {
-  const q = rawQuery.trim().slice(0, 50);
-  if (!q) return { results: [] };
+export async function searchHospitals(input: SearchInput): Promise<SearchOutcome> {
+  const q = input.q.trim().slice(0, 50);
+  const spec = input.area ? areaSpec(input.area) : null;
+  const tokens = searchTokens(q);
+  const page = Math.max(1, input.page ?? 1);
+  if (tokens.length === 0 && !spec) return { results: [], total: 0, page };
 
   const admin = createAdminClient();
   let error: SearchOutcome["error"];
-  const ordered: Base[] = [];
 
-  const naver = await fromNaver(q, type);
-  if ("error" in naver) {
-    error = naver.error;
-  } else {
-    const candidates = naver.items.filter(isMedical).map(toCandidate);
-    if (candidates.length > 0) {
-      const { data, error: dbError } = await admin
-        .from("hospitals")
-        .upsert(candidates, { onConflict: "external_id" })
-        .select(BASE_COLUMNS);
-      if (dbError || !data) error = "db";
-      else {
-        const order = new Map(candidates.map((c, i) => [c.name, i]));
-        ordered.push(...[...data].sort((a, b) => (order.get(a.name) ?? 0) - (order.get(b.name) ?? 0)));
+  if (q && page === 1) {
+    const naver = await fromNaver(input.area && !spec ? q : [input.area, q].filter(Boolean).join(" "), input.type);
+    if ("error" in naver) error = naver.error;
+    else {
+      const candidates = naver.items.filter(isMedical).map(toCandidate);
+      if (candidates.length > 0) {
+        const { error: dbError } = await admin.from("hospitals").upsert(candidates, { onConflict: "external_id" });
+        if (dbError) error = "db";
       }
     }
   }
 
-  // Known hospitals where every word appears in the name or address.
-  const tokens = searchTokens(q);
-  if (tokens.length > 0) {
-    let query = admin.from("hospitals").select(BASE_COLUMNS);
+  const run = (pageNumber: number) => {
+    // Hospitals of the kinds we list (HIRA's dental, oriental and nursing institutions are left out);
+    // rows from Naver have no type and stay.
+    let query = admin
+      .from("hospital_directory")
+      .select(COLUMNS, { count: "exact" })
+      .or(`type_code.in.(${MEDICAL_TYPES.join(",")}),type_code.is.null`);
+
     for (const word of tokens) {
       query = query.or(`name.ilike.%${word}%,road_address.ilike.%${word}%,address.ilike.%${word}%`);
     }
-    const { data } = await query.limit(10);
-    const seen = new Set(ordered.map((h) => h.id));
-    for (const h of data ?? []) if (!seen.has(h.id)) ordered.push(h);
-  }
-  if (ordered.length === 0) return { results: [], error };
+    if (spec) {
+      query = query.eq("sido", spec.sido);
+      if (spec.sgg) query = query.eq("sgg", spec.sgg);
+      if (spec.dongs) query = query.or(spec.dongs.map((d) => `road_address.ilike.%${d}%`).join(","));
+    }
+    if (input.rating) query = query.gte("avg_rating", input.rating / 10);
+    if (input.reviews) query = query.gte("review_count", input.reviews);
+    if (input.english) query = query.gt("fluent_english_count", 0);
+    if (input.director) query = query.gt("director_count", 0);
 
-  const { data: stats } = await admin
-    .from("hospital_stats")
-    .select("hospital_id, review_count, avg_rating, fluent_english_count, director_count")
-    .in("hospital_id", ordered.map((h) => h.id));
-  const byId = new Map((stats ?? []).map((s) => [s.hospital_id, s]));
-
-  return {
-    results: ordered.map((h) => {
-      const s = byId.get(h.id);
-      return {
-        ...h,
-        review_count: s?.review_count ?? 0,
-        avg_rating: s?.avg_rating === null || s?.avg_rating === undefined ? null : Number(s.avg_rating),
-        fluent_english_count: s?.fluent_english_count ?? 0,
-        director_count: s?.director_count ?? 0,
-      };
-    }),
-    // Naver being down only matters when we have nothing to show.
-    error,
+    const desc = { ascending: false, nullsFirst: false };
+    query =
+      input.sort === "rating"
+        ? query.order("avg_rating", desc).order("review_count", desc)
+        : query.order("review_count", desc).order("avg_rating", desc);
+    // name and id make the order total, so a hospital never shows up on two pages.
+    const from = (pageNumber - 1) * PAGE_SIZE;
+    return query.order("name").order("id").range(from, from + PAGE_SIZE - 1);
   };
+
+  let shown = page;
+  let { data, count, error: dbError } = await run(page);
+  if (dbError?.code === "PGRST103" && page > 1) {
+    // Asked for a page past the end: show the first one.
+    shown = 1;
+    ({ data, count, error: dbError } = await run(1));
+  }
+  if (dbError) return { results: [], total: 0, page: shown, error: "db" };
+
+  const results = (data ?? []).map((h) => ({ ...h, avg_rating: h.avg_rating === null ? null : Number(h.avg_rating) })) as SearchResult[];
+  return { results, total: count ?? results.length, page: shown, error: results.length === 0 ? error : undefined };
 }

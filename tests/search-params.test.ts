@@ -2,11 +2,12 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   aggregateReviews,
-  applyFilters,
+  areaSpec,
   composeQuery,
+  displayQuery,
+  pageWindow,
   parseParams,
   searchTokens,
-  sortResults,
   toQueryString,
   toggleCompare,
 } from "../src/lib/search-params.ts";
@@ -52,28 +53,63 @@ describe("searchTokens", () => {
 });
 
 describe("composeQuery", () => {
-  it("combines area, treatment and text and picks the dermatology keyword", () => {
-    assert.deepEqual(composeQuery(parseParams({ area: "강남", treatment: "레이저 토닝" })), { query: "강남 레이저 토닝", type: "derm" });
+  it("combines treatment and text and picks the dermatology keyword", () => {
+    assert.deepEqual(composeQuery(parseParams({ treatment: "레이저 토닝", q: "고운" })), { query: "레이저 토닝 고운", type: "derm" });
     assert.deepEqual(composeQuery(parseParams({ q: "서울병원" })), { query: "서울병원", type: "all" });
+  });
+  it("keeps a known area out of the words: it filters by location, not by name", () => {
+    assert.deepEqual(composeQuery(parseParams({ area: "강남", q: "아비쥬" })), { query: "아비쥬", type: "all" });
+    assert.deepEqual(composeQuery(parseParams({ area: "강남" })), { query: "", type: "all" });
+  });
+  it("still treats an unknown area typed into the URL as an ordinary word", () => {
+    assert.deepEqual(composeQuery(parseParams({ area: "제주", q: "피부과" })), { query: "제주 피부과", type: "derm" });
   });
 });
 
-describe("filters and sorting", () => {
-  const rows = [
-    { id: "a", review_count: 0, avg_rating: null, fluent_english_count: 0, director_count: 0 },
-    { id: "b", review_count: 12, avg_rating: 4.6, fluent_english_count: 5, director_count: 0 },
-    { id: "c", review_count: 3, avg_rating: 4.1, fluent_english_count: 0, director_count: 2 },
-  ];
-  it("applies rating, review and support filters", () => {
-    assert.deepEqual(applyFilters(rows, parseParams({ rating: "45" })).map((r) => r.id), ["b"]);
-    assert.deepEqual(applyFilters(rows, parseParams({ reviews: "1" })).map((r) => r.id), ["b", "c"]);
-    assert.deepEqual(applyFilters(rows, parseParams({ director: "1" })).map((r) => r.id), ["c"]);
-    assert.deepEqual(applyFilters(rows, parseParams({ english: "1", reviews: "10" })).map((r) => r.id), ["b"]);
+describe("areaSpec", () => {
+  it("describes each offered area by its location", () => {
+    assert.deepEqual(areaSpec("강남"), { sido: "서울", sgg: "강남구" });
+    assert.deepEqual(areaSpec("부산"), { sido: "부산" });
+    assert.equal(areaSpec("명동")?.sgg, "중구");
+    assert.ok(areaSpec("홍대")?.dongs?.includes("서교동"));
   });
-  it("sorts without mutating the input", () => {
-    assert.deepEqual(sortResults(rows, "rating").map((r) => r.id), ["b", "c", "a"]);
-    assert.deepEqual(sortResults(rows, "reviews").map((r) => r.id), ["b", "c", "a"]);
-    assert.deepEqual(rows.map((r) => r.id), ["a", "b", "c"]);
+  it("is null for anything else", () => {
+    assert.equal(areaSpec(""), null);
+    assert.equal(areaSpec("제주"), null);
+    assert.equal(areaSpec("toString"), null);
+  });
+});
+
+describe("displayQuery", () => {
+  it("puts a known area, under its display name, before the words", () => {
+    const f = parseParams({ area: "강남", q: "아비쥬" });
+    assert.equal(displayQuery(f), "강남 아비쥬");
+    assert.equal(displayQuery(f, "Gangnam"), "Gangnam 아비쥬");
+  });
+  it("is empty without an area or words, and does not repeat an unknown area", () => {
+    assert.equal(displayQuery(parseParams({})), "");
+    assert.equal(displayQuery(parseParams({ area: "제주" }), "Jeju"), "제주");
+  });
+});
+
+describe("paging", () => {
+  it("reads the page number and falls back to 1 for junk", () => {
+    assert.equal(parseParams({ page: "3" }).page, 3);
+    for (const bad of ["0", "-2", "abc", "1.5", ""]) assert.equal(parseParams({ page: bad }).page, 1);
+    assert.equal(parseParams({}).page, 1);
+    assert.equal(parseParams({ page: "999999" }).page, 1000);
+  });
+  it("keeps the page in the query string only after the first page", () => {
+    assert.equal(toQueryString(parseParams({ q: "a" })), "?q=a");
+    assert.equal(toQueryString(parseParams({ q: "a", page: "2" })), "?q=a&page=2");
+  });
+  it("windows the page numbers around the current one", () => {
+    assert.deepEqual(pageWindow(1, 1), [1]);
+    assert.deepEqual(pageWindow(1, 3), [1, 2, 3]);
+    assert.deepEqual(pageWindow(1, 20), [1, 2, null, 20]);
+    assert.deepEqual(pageWindow(10, 20), [1, null, 9, 10, 11, null, 20]);
+    assert.deepEqual(pageWindow(20, 20), [1, null, 19, 20]);
+    assert.deepEqual(pageWindow(2, 4), [1, 2, 3, 4]);
   });
 });
 
