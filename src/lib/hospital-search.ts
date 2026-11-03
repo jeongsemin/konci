@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { MEDICAL_TYPES } from "@/lib/hira";
 import { isMedical, toCandidate, type NaverLocalItem } from "@/lib/naver-local";
 import { PAGE_SIZE, areaSpec, searchTokens, type Sort } from "@/lib/search-params";
+import { planSlices } from "@/lib/search-plan";
 
 export type SearchType = "all" | "derm";
 
@@ -47,6 +48,18 @@ export type SearchOutcome = {
 
 const KEYWORD: Record<SearchType, string> = { all: "병원", derm: "피부과" };
 const COLUMNS = "id, name, category, address, road_address, sido, sgg, review_count, avg_rating, fluent_english_count, director_count";
+
+/**
+ * How closely a hospital's name matches what was typed. In the default order every hospital of an
+ * earlier tier comes before every hospital of a later one, whatever their reviews:
+ *  exact  the name is the search ("아비쥬의원")
+ *  prefix the name starts with it ("아비쥬의원 강서점")
+ *  name   every word is somewhere in the name
+ *  rest   the words are found in the name or the address
+ * `all` is the single tier used when the order is chosen explicitly or there are no words (area only).
+ */
+type Tier = "exact" | "prefix" | "name" | "rest" | "all";
+const NAME_FIRST: Tier[] = ["exact", "prefix", "name", "rest"];
 
 async function fromNaver(q: string, type: SearchType): Promise<{ items: NaverLocalItem[] } | { error: "not_configured" | "upstream" }> {
   const id = process.env.NAVER_SEARCH_CLIENT_ID;
@@ -100,17 +113,38 @@ export async function searchHospitals(input: SearchInput): Promise<SearchOutcome
     }
   }
 
-  const run = (pageNumber: number) => {
+  const phrase = tokens.join(" ");
+  const nameFirst = tokens.length > 0 && (input.sort ?? "relevance") === "relevance";
+  const tiers: Tier[] = nameFirst ? NAME_FIRST : ["all"];
+
+  /** The hospitals of one tier that pass the filters, in the order they are shown. */
+  const tierQuery = (tier: Tier, select: { count: "exact"; head: true } | { count: "exact" }) => {
     // Hospitals of the kinds we list (HIRA's dental, oriental and nursing institutions are left out);
     // rows from Naver have no type and stay.
     let query = admin
       .from("hospital_directory")
-      .select(COLUMNS, { count: "exact" })
+      .select(COLUMNS, select)
       .or(`type_code.in.(${MEDICAL_TYPES.join(",")}),type_code.is.null`);
 
-    for (const word of tokens) {
-      query = query.or(`name.ilike.%${word}%,road_address.ilike.%${word}%,address.ilike.%${word}%`);
+    switch (tier) {
+      case "exact":
+        query = query.ilike("name", phrase);
+        break;
+      case "prefix":
+        query = query.ilike("name", `${phrase}%`).not("name", "ilike", phrase);
+        break;
+      case "name":
+        for (const word of tokens) query = query.ilike("name", `%${word}%`);
+        query = query.not("name", "ilike", `${phrase}%`);
+        break;
+      case "rest":
+      case "all":
+        for (const word of tokens) query = query.or(`name.ilike.%${word}%,road_address.ilike.%${word}%,address.ilike.%${word}%`);
+        // Not already listed under the name tiers: at least one word is missing from the name.
+        if (tier === "rest") query = query.or(tokens.map((w) => `name.not.ilike.%${w}%`).join(","));
+        break;
     }
+
     if (spec) {
       query = query.eq("sido", spec.sido);
       if (spec.sgg) query = query.eq("sgg", spec.sgg);
@@ -120,26 +154,35 @@ export async function searchHospitals(input: SearchInput): Promise<SearchOutcome
     if (input.reviews) query = query.gte("review_count", input.reviews);
     if (input.english) query = query.gt("fluent_english_count", 0);
     if (input.director) query = query.gt("director_count", 0);
-
-    const desc = { ascending: false, nullsFirst: false };
-    query =
-      input.sort === "rating"
-        ? query.order("avg_rating", desc).order("review_count", desc)
-        : query.order("review_count", desc).order("avg_rating", desc);
-    // name and id make the order total, so a hospital never shows up on two pages.
-    const from = (pageNumber - 1) * PAGE_SIZE;
-    return query.order("name").order("id").range(from, from + PAGE_SIZE - 1);
+    return query;
   };
 
-  let shown = page;
-  let { data, count, error: dbError } = await run(page);
-  if (dbError?.code === "PGRST103" && page > 1) {
-    // Asked for a page past the end: show the first one.
-    shown = 1;
-    ({ data, count, error: dbError } = await run(1));
-  }
-  if (dbError) return { results: [], total: 0, page: shown, error: "db" };
+  const counted = await Promise.all(tiers.map((tier) => tierQuery(tier, { count: "exact", head: true })));
+  if (counted.some((r) => r.error)) return { results: [], total: 0, page, error: "db" };
+  const counts = counted.map((r) => r.count ?? 0);
+  const total = counts.reduce((a, b) => a + b, 0);
 
-  const results = (data ?? []).map((h) => ({ ...h, avg_rating: h.avg_rating === null ? null : Number(h.avg_rating) })) as SearchResult[];
-  return { results, total: count ?? results.length, page: shown, error: results.length === 0 ? error : undefined };
+  // A page past the end shows the first one.
+  const shown = (page - 1) * PAGE_SIZE < total ? page : 1;
+  const slices = planSlices(counts, (shown - 1) * PAGE_SIZE, PAGE_SIZE);
+
+  // Most reviewed first (the rating only breaks a tie), unless the rating order was asked for.
+  // Name and id make the order total, so a hospital never shows up on two pages.
+  const desc = { ascending: false, nullsFirst: false };
+  const fetched = await Promise.all(
+    slices.map(({ tier, from, to }) => {
+      const query = tierQuery(tiers[tier], { count: "exact" });
+      const ordered =
+        input.sort === "rating"
+          ? query.order("avg_rating", desc).order("review_count", desc)
+          : query.order("review_count", desc).order("avg_rating", desc);
+      return ordered.order("name").order("id").range(from, to);
+    }),
+  );
+  if (fetched.some((r) => r.error)) return { results: [], total: 0, page: shown, error: "db" };
+
+  const results = fetched
+    .flatMap((r) => r.data ?? [])
+    .map((h) => ({ ...h, avg_rating: h.avg_rating === null ? null : Number(h.avg_rating) })) as SearchResult[];
+  return { results, total, page: shown, error: results.length === 0 ? error : undefined };
 }
