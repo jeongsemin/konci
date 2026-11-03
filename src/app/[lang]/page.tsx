@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { hasLocale, localeNames, locales } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
+import { categoryLine } from "@/lib/region";
 import { createClient } from "@/lib/supabase/server";
 import { Container } from "@/components/container";
 import { SearchForm } from "@/components/search-form";
@@ -71,7 +72,7 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
   const { data: topHospitals } = topStats?.length
     ? await supabase
         .from("hospitals")
-        .select("id, name, category, road_address, address")
+        .select("id, name, category, road_address, address, sido, sgg")
         .in("id", topStats.map((s) => s.hospital_id))
     : { data: [] };
   const featured = (topStats ?? []).flatMap((s) => {
@@ -190,7 +191,9 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
                     href={`/${lang}/hospitals/${c.id}`}
                     className="block h-full space-y-3 rounded-md border border-border bg-card p-5 hover:border-brand"
                   >
-                    {c.category && <p className="text-[10px] font-bold text-brand">{c.category}</p>}
+                    {categoryLine(c.category, c.sido, c.sgg) && (
+                      <p className="text-[10px] font-bold text-brand">{categoryLine(c.category, c.sido, c.sgg)}</p>
+                    )}
                     <p className="text-[19px] font-bold">{c.name}</p>
                     <p className="text-xs">
                       <span className="text-star">★</span> {c.avg_rating} · {h.featured.reviews} {c.review_count}

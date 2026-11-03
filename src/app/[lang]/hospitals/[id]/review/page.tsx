@@ -4,6 +4,7 @@ import { Check, Info } from "lucide-react";
 import { hasLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
 import { requireProfile } from "@/lib/auth";
+import { regionLabel } from "@/lib/region";
 import { createClient } from "@/lib/supabase/server";
 import { Container } from "@/components/container";
 import { ReceiptUploader } from "./receipt-uploader";
@@ -30,7 +31,7 @@ export default async function ReviewPage({ params }: PageProps<"/[lang]/hospital
 
   const { data: hospital } = await supabase
     .from("hospitals")
-    .select("id, name, road_address, address")
+    .select("id, name, road_address, address, sido, sgg")
     .eq("id", id)
     .single();
   if (!hospital) notFound();
@@ -80,6 +81,7 @@ export default async function ReviewPage({ params }: PageProps<"/[lang]/hospital
             <p className="text-[13px] font-bold">{w.hospital} *</p>
             <div className="min-h-[52px] rounded-sm border border-border bg-white p-3.5 text-sm">
               {hospital.name}
+              {regionLabel(hospital.sido, hospital.sgg) && <span className="font-bold"> · {regionLabel(hospital.sido, hospital.sgg)}</span>}
               <span className="text-muted"> · {hospital.road_address || hospital.address}</span>
             </div>
             <p className="text-xs text-muted">{w.hospitalHelp}</p>

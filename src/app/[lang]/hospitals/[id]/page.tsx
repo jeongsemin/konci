@@ -4,6 +4,7 @@ import { BadgeCheck, ExternalLink, Info, MapPin, PenLine, Phone } from "lucide-r
 import { hasLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
 import { aggregateReviews, type ReviewRow } from "@/lib/search-params";
+import { categoryLine } from "@/lib/region";
 import { createClient } from "@/lib/supabase/server";
 import { Container } from "@/components/container";
 import { StarRating } from "@/components/star-rating";
@@ -123,7 +124,9 @@ export default async function HospitalPage({ params, searchParams }: PageProps<"
             {crumbHere}
           </p>
           <div className="space-y-2.5">
-            {hospital.category && <p className="text-[11px] text-brand">{hospital.category}</p>}
+            {categoryLine(hospital.category, hospital.sido, hospital.sgg) && (
+              <p className="text-[11px] text-brand">{categoryLine(hospital.category, hospital.sido, hospital.sgg)}</p>
+            )}
             <h1 className="text-3xl font-bold leading-snug md:text-[40px]">{hospital.name}</h1>
             <div className="flex items-center gap-1.5">
               {stats.total > 0 ? (
