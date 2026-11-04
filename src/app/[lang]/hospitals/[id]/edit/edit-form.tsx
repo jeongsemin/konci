@@ -1,7 +1,7 @@
 "use client";
 
 import { startTransition, useActionState, useState, type FormEvent } from "react";
-import { NOTE_MAX, type EditField } from "@/lib/edit-request";
+import { CLOSURE_VALUES, NOTE_MAX, type ClosureValue, type EditField, type TextField, type ValueField } from "@/lib/edit-request";
 import { submitEditRequest, type EditState } from "./actions";
 
 type Text = {
@@ -10,7 +10,14 @@ type Text = {
   current: string;
   empty: string;
   value: string;
-  placeholders: Record<Exclude<EditField, "other">, string>;
+  placeholders: Record<TextField, string>;
+  closure: {
+    legend: string;
+    states: Record<"open" | ClosureValue, string>;
+    choices: Record<ClosureValue, string>;
+    note: string;
+    noteMoved: string;
+  };
   note: string;
   noteOther: string;
   noteHelp: string;
@@ -26,7 +33,8 @@ type Props = {
   hospitalId: string;
   /** The fields offered: a hospital's manager gets more than other members. */
   fields: EditField[];
-  current: Record<Exclude<EditField, "other">, string | null>;
+  /** What the hospital has now; for the closure report, why it is closed (null while it is open). */
+  current: Record<ValueField, string | null>;
   text: Text;
 };
 
@@ -39,6 +47,7 @@ export function EditForm(props: Props) {
 function Form({ lang, hospitalId, fields, current, text, onAnother }: Props & { onAnother: () => void }) {
   const [state, action, pending] = useActionState<EditState, FormData>(submitEditRequest, null);
   const [field, setField] = useState<EditField>(fields[0]);
+  const [choice, setChoice] = useState<ClosureValue | "">("");
   // <form action> would reset the form after an error and wipe what the member typed.
   const submit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -61,7 +70,15 @@ function Form({ lang, hospitalId, fields, current, text, onAnother }: Props & { 
     );
   }
 
-  const shown = field === "other" ? null : current[field];
+  const shown =
+    field === "other"
+      ? null
+      : field === "closure"
+        ? text.closure.states[(current.closure as ClosureValue | null) ?? "open"]
+        : current[field] || text.empty;
+  // A move needs the new address, so the note is required then (and for a free-text report).
+  const noteRequired = field === "other" || (field === "closure" && choice === "moved");
+  const noteLabel = field === "other" ? text.noteOther : field === "closure" ? (choice === "moved" ? text.closure.noteMoved : text.closure.note) : text.note;
 
   return (
     <form onSubmit={submit} className="space-y-5 rounded-md border border-border bg-card p-5 md:p-6">
@@ -81,29 +98,44 @@ function Form({ lang, hospitalId, fields, current, text, onAnother }: Props & { 
       {field !== "other" && (
         <>
           <p className="rounded-sm bg-surface p-3 text-xs text-muted">
-            {text.current}: <span className="break-all font-bold text-foreground">{shown || text.empty}</span>
+            {text.current}: <span className="break-all font-bold text-foreground">{shown}</span>
           </p>
-          <label className="block space-y-2">
-            <span className="text-[13px] font-bold">{text.value}</span>
-            <input
-              key={field}
-              name="value"
-              required
-              maxLength={200}
-              placeholder={text.placeholders[field]}
-              className="min-h-[52px] w-full rounded-sm border border-border bg-white p-3.5 text-sm outline-none focus:border-focus"
-            />
-          </label>
+          {field === "closure" ? (
+            <fieldset className="space-y-2.5">
+              <legend className="text-[13px] font-bold">{text.closure.legend}</legend>
+              {CLOSURE_VALUES.map((v) => (
+                <label key={v} className="flex min-h-11 cursor-pointer items-center gap-3 text-sm">
+                  <input type="radio" name="value" value={v} required checked={choice === v} onChange={() => setChoice(v)} className="size-4 accent-brand" />
+                  {text.closure.choices[v]}
+                </label>
+              ))}
+            </fieldset>
+          ) : (
+            <label className="block space-y-2">
+              <span className="text-[13px] font-bold">{text.value}</span>
+              <input
+                key={field}
+                name="value"
+                required
+                maxLength={200}
+                placeholder={text.placeholders[field]}
+                className="min-h-[52px] w-full rounded-sm border border-border bg-white p-3.5 text-sm outline-none focus:border-focus"
+              />
+            </label>
+          )}
         </>
       )}
 
       <label className="block space-y-2">
-        <span className="text-[13px] font-bold">{field === "other" ? text.noteOther : text.note}</span>
+        <span className="text-[13px] font-bold">
+          {noteLabel}
+          {noteRequired && " *"}
+        </span>
         <textarea
           name="note"
           rows={3}
           maxLength={NOTE_MAX}
-          required={field === "other"}
+          required={noteRequired}
           className="w-full rounded-sm border border-border bg-white p-3.5 text-sm outline-none focus:border-focus"
         />
         <span className="block text-xs text-muted">{text.noteHelp}</span>

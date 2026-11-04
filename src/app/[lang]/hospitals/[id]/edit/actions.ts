@@ -40,11 +40,13 @@ export async function submitEditRequest(_prev: EditState, form: FormData): Promi
 
   const { data: hospital } = await supabase
     .from("hospitals")
-    .select("phone, homepage, name_en, name_ja, name_zh, hours_note")
+    .select("phone, homepage, name_en, name_ja, name_zh, hours_note, closed_reason")
     .eq("id", input.hospitalId)
     .maybeSingle();
   if (!hospital) return { error: "invalid" };
-  if (input.field !== "other" && input.value && isSameValue(input.field, input.value, hospital[input.field])) return { error: "same" };
+  // For a closure report the "value" is why the hospital is closed now (null while it is open).
+  const current = { ...hospital, closure: hospital.closed_reason };
+  if (input.field !== "other" && input.value && isSameValue(input.field, input.value, current[input.field])) return { error: "same" };
 
   const since = new Date(Date.now() - 86_400_000).toISOString();
   const { count } = await supabase

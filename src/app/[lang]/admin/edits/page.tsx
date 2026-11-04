@@ -4,11 +4,11 @@ import { Info } from "lucide-react";
 import { hasLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
 import { requireProfile } from "@/lib/auth";
-import { isEditField, type EditField } from "@/lib/edit-request";
+import { isEditField, type ClosureValue, type EditField } from "@/lib/edit-request";
 import { regionLabel } from "@/lib/region";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Container } from "@/components/container";
-import { decideEdit } from "../actions";
+import { decideEdit, reopenHospital } from "../actions";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 
@@ -23,6 +23,7 @@ type Hospital = {
   name_ja: string | null;
   name_zh: string | null;
   hours_note: string | null;
+  closed_reason: string | null;
 } | null;
 type Named = { display_name: string | null } | null;
 
@@ -44,8 +45,8 @@ export default async function EditsPage({ params }: PageProps<"/[lang]/admin/edi
 
   const admin = createAdminClient();
   // The table points at profiles twice (requester, resolver), so each embed names its foreign key.
-  const hospitalCols = "hospitals(id, name, sido, sgg, phone, homepage, name_en, name_ja, name_zh, hours_note)";
-  const [{ data: open }, { data: done }] = await Promise.all([
+  const hospitalCols = "hospitals(id, name, sido, sgg, phone, homepage, name_en, name_ja, name_zh, hours_note, closed_reason)";
+  const [{ data: open }, { data: done }, { data: closed }] = await Promise.all([
     admin
       .from("hospital_edit_requests")
       .select(`id, field, value, note, by_manager, created_at, ${hospitalCols}, requester:profiles!hospital_edit_requests_requester_id_fkey(display_name)`)
@@ -63,11 +64,22 @@ export default async function EditsPage({ params }: PageProps<"/[lang]/admin/edi
       .not("resolved_at", "is", null)
       .order("resolved_at", { ascending: false })
       .limit(10),
+    // Hospitals currently shown as closed or moved, so a mistaken decision can be undone.
+    admin
+      .from("hospitals")
+      .select("id, name, sido, sgg, closed_at, closed_reason, closed_note")
+      .not("closed_at", "is", null)
+      .order("closed_at", { ascending: false })
+      .limit(50),
   ]);
 
   const fmt = (iso: string) => new Date(iso).toLocaleString(lang, { dateStyle: "medium", timeStyle: "short" });
   const fieldLabel = (f: string) => (isEditField(f) ? labels[f] : f);
-  const currentOf = (h: Hospital, f: EditField) => (f === "other" || !h ? null : h[f]);
+  const choices = dict.edit.closure.choices;
+  // A closure report's value is "closed" or "moved"; show it in words.
+  const choiceLabel = (v: string) => choices[v as ClosureValue] ?? v;
+  const currentOf = (h: Hospital, f: EditField) =>
+    f === "other" || !h ? null : f === "closure" ? dict.edit.closure.states[(h.closed_reason as ClosureValue | null) ?? "open"] : h[f];
 
   return (
     <>
@@ -129,7 +141,7 @@ export default async function EditsPage({ params }: PageProps<"/[lang]/admin/edi
                           <dt className="text-muted">{t.card.current}</dt>
                           <dd className="break-all">{current || t.card.none}</dd>
                           <dt className="text-muted">{t.card.proposed}</dt>
-                          <dd className="break-all rounded-sm bg-brand-soft px-2 py-1 font-bold text-brand">{r.value}</dd>
+                          <dd className="break-all rounded-sm bg-brand-soft px-2 py-1 font-bold text-brand">{field === "closure" ? choiceLabel(r.value ?? "") : r.value}</dd>
                         </>
                       )}
                       {r.note && (
@@ -151,7 +163,7 @@ export default async function EditsPage({ params }: PageProps<"/[lang]/admin/edi
                       />
                       <div className="flex flex-wrap gap-3">
                         <button name="decision" value="approve" className="min-h-12 rounded-sm bg-brand px-5 py-3 text-sm font-bold text-white hover:bg-brand-strong">
-                          {field === "other" ? t.card.approveOther : t.card.approve}
+                          {field === "other" ? t.card.approveOther : field === "closure" ? t.card.approveClosure : t.card.approve}
                         </button>
                         <button name="decision" value="reject" className="min-h-12 rounded-sm border border-error bg-white px-5 py-3 text-sm font-bold text-error hover:bg-error-soft">
                           {t.card.reject}
@@ -179,7 +191,7 @@ export default async function EditsPage({ params }: PageProps<"/[lang]/admin/edi
                       <p className="font-bold">
                         {hospital?.name ?? "—"} · {fieldLabel(r.field)}
                       </p>
-                      {r.value && <p className="break-all text-xs text-muted">{r.value}</p>}
+                      {r.value && <p className="break-all text-xs text-muted">{r.field === "closure" ? choiceLabel(r.value) : r.value}</p>}
                       <p className="text-xs text-muted">
                         {(r.requester as unknown as Named)?.display_name ?? "—"} · {t.recent.by} {(r.resolver as unknown as Named)?.display_name ?? "—"} · {fmt(r.resolved_at as string)}
                         {r.reject_reason && ` · ${r.reject_reason}`}
@@ -191,6 +203,41 @@ export default async function EditsPage({ params }: PageProps<"/[lang]/admin/edi
                   </li>
                 );
               })}
+            </ul>
+          )}
+        </section>
+
+        {/* Closed or moved */}
+        <section className="space-y-5">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-bold leading-snug md:text-[28px]">{t.closedTitle}</h2>
+            <p className="text-sm text-muted">{t.closedSubtitle}</p>
+          </div>
+          {(closed ?? []).length === 0 ? (
+            <p className="text-sm text-muted">{t.closedEmpty}</p>
+          ) : (
+            <ul className="divide-y divide-border rounded-md border border-border bg-card">
+              {(closed ?? []).map((h) => (
+                <li key={h.id} className="flex flex-wrap items-center justify-between gap-3 p-4 text-sm">
+                  <div className="min-w-0 space-y-0.5">
+                    <p className="font-bold">
+                      <Link href={`/${lang}/hospitals/${h.id}`} className="hover:text-brand">
+                        {h.name}
+                      </Link>{" "}
+                      <span className="font-normal text-muted">· {regionLabel(h.sido, h.sgg)}</span>
+                    </p>
+                    <p className="text-xs text-muted">
+                      {choiceLabel(h.closed_reason ?? "")} · {fmt(h.closed_at as string)}
+                      {h.closed_note && ` · ${h.closed_note}`}
+                    </p>
+                  </div>
+                  <form action={reopenHospital}>
+                    <input type="hidden" name="lang" value={lang} />
+                    <input type="hidden" name="hospitalId" value={h.id} />
+                    <button className="min-h-10 rounded-sm border border-border bg-white px-4 text-xs font-bold text-brand hover:bg-brand-soft">{t.reopen}</button>
+                  </form>
+                </li>
+              ))}
             </ul>
           )}
         </section>

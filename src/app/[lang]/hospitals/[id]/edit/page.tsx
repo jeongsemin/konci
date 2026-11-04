@@ -4,7 +4,7 @@ import { Info } from "lucide-react";
 import { hasLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
 import { requireProfile } from "@/lib/auth";
-import { fieldsFor, isEditField } from "@/lib/edit-request";
+import { fieldsFor, isEditField, type ClosureValue } from "@/lib/edit-request";
 import { categoryLine } from "@/lib/region";
 import { createClient } from "@/lib/supabase/server";
 import { Container } from "@/components/container";
@@ -31,7 +31,7 @@ export default async function EditRequestPage({ params }: PageProps<"/[lang]/hos
 
   const { data: hospital } = await supabase
     .from("hospitals")
-    .select("id, name, category, sido, sgg, road_address, address, phone, homepage, name_en, name_ja, name_zh, hours_note")
+    .select("id, name, category, sido, sgg, road_address, address, phone, homepage, name_en, name_ja, name_zh, hours_note, closed_reason")
     .eq("id", id)
     .maybeSingle();
   if (!hospital) notFound();
@@ -63,6 +63,7 @@ export default async function EditRequestPage({ params }: PageProps<"/[lang]/hos
     empty: t.empty,
     value: t.value,
     placeholders: t.placeholders,
+    closure: t.closure,
     note: t.note,
     noteOther: t.noteOther,
     noteHelp: t.noteHelp,
@@ -107,6 +108,7 @@ export default async function EditRequestPage({ params }: PageProps<"/[lang]/hos
             name_ja: hospital.name_ja,
             name_zh: hospital.name_zh,
             hours_note: hospital.hours_note,
+            closure: hospital.closed_reason,
           }}
           text={formText}
         />
@@ -121,7 +123,9 @@ export default async function EditRequestPage({ params }: PageProps<"/[lang]/hos
                 <li key={r.id} className="flex flex-wrap items-start justify-between gap-3 p-4 text-sm">
                   <div className="min-w-0 space-y-0.5">
                     <p className="font-bold">{isEditField(r.field) ? t.fields[r.field] : r.field}</p>
-                    {r.value && <p className="break-all text-xs text-muted">{r.value}</p>}
+                    {r.value && (
+                      <p className="break-all text-xs text-muted">{r.field === "closure" ? (t.closure.choices[r.value as ClosureValue] ?? r.value) : r.value}</p>
+                    )}
                     <p className="text-[11px] text-muted">{new Date(r.created_at).toLocaleDateString(lang)}</p>
                     {r.status === "rejected" && r.reject_reason && (
                       <p className="text-xs text-error">

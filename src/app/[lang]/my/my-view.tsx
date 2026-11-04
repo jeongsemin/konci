@@ -260,7 +260,11 @@ export function MyView({
                           )}{" "}
                           · {field}
                         </p>
-                        {r.value && <p className="break-all text-xs text-muted">{r.value}</p>}
+                        {r.value && (
+                          <p className="break-all text-xs text-muted">
+                            {r.field === "closure" ? (dict.edit.closure.choices[r.value as keyof typeof dict.edit.closure.choices] ?? r.value) : r.value}
+                          </p>
+                        )}
                         <p className="text-[11px] text-muted">{new Date(r.created_at).toLocaleDateString(lang)}</p>
                         {r.status === "rejected" && r.reject_reason && (
                           <p className="text-xs text-error">

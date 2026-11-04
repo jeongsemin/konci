@@ -337,7 +337,13 @@
       "sourceBody": "Name, address and phone number come from Naver Maps search and may change."
     },
     "homepage": "Website",
-    "hours": "Opening hours"
+    "hours": "Opening hours",
+    "closed": {
+      "closed": "This clinic has been confirmed as closed.",
+      "moved": "This clinic has been confirmed as moved.",
+      "noteClosed": "Note",
+      "noteMoved": "New address"
+    }
   },
   "review": {
     "title": "Write a review",
@@ -681,7 +687,8 @@
         "approve": "Approve and apply",
         "approveOther": "Mark as handled",
         "reject": "Reject",
-        "byManager": "Clinic manager request"
+        "byManager": "Clinic manager request",
+        "approveClosure": "Mark as closed or moved (hide from search)"
       },
       "recent": {
         "title": "Recently handled",
@@ -690,7 +697,11 @@
         "rejected": "Rejected",
         "by": "by"
       },
-      "note": "\"Something else that is wrong\" has no value, so approving it changes nothing by itself. Check it, fix it yourself, then press \"Mark as handled\"."
+      "note": "Approving a closure or move removes the clinic from the search, the home page and the sitemap and shows a notice on its page. It does not come back when the public data is refreshed. \"Something else that is wrong\" has no value, so approving it changes nothing by itself. Check it, fix it yourself, then press \"Mark as handled\".",
+      "closedTitle": "Clinics marked as closed or moved",
+      "closedSubtitle": "They are left out of the search, the home page and the sitemap, and their page shows a notice. Reviews stay. If a decision was a mistake, reopen it.",
+      "closedEmpty": "No clinics marked.",
+      "reopen": "Reopen"
     },
     "managersLink": {
       "title": "Clinic manager applications",
@@ -845,16 +856,17 @@
     "link": "Request a correction",
     "back": "Back to the clinic",
     "title": "Request a correction",
-    "subtitle": "You can correct the phone number, website or English name. An administrator reviews it before it is applied.",
+    "subtitle": "You can correct the phone number, website or English name, or tell us that a clinic has closed or moved. An administrator reviews it before it is applied.",
     "field": "What to correct",
     "fields": {
       "phone": "Phone number",
       "homepage": "Website",
       "name_en": "English name",
-      "other": "Something else that is wrong (closed, moved…)",
+      "other": "Something else that is wrong",
       "name_ja": "Japanese name",
       "name_zh": "Chinese name",
-      "hours_note": "Opening hours / days off"
+      "hours_note": "Opening hours / days off",
+      "closure": "Report a closure or move"
     },
     "current": "Current",
     "empty": "None",
@@ -875,7 +887,7 @@
     "done": "Request received. An administrator will review it before it is applied.",
     "another": "Request another correction",
     "errors": {
-      "invalid": "Please check your input. The phone number, website and English name must be in a valid format, and \"something else\" needs an explanation.",
+      "invalid": "Please check your input. The phone number, website and English name must be in a valid format, and \"moved\" and \"something else\" need an explanation.",
       "same": "That is already what is registered.",
       "duplicate": "You already have a request for this item under review.",
       "suspended": "Suspended accounts cannot send requests.",
@@ -896,7 +908,21 @@
     "myTitle": "My correction requests",
     "myNav": "My correction requests ({n})",
     "myEmpty": "You have not sent any correction requests.",
-    "managerNotice": "You are requesting as this clinic's manager. You can also request the Japanese and Chinese names and an opening-hours note. Every request is applied after an administrator reviews it."
+    "managerNotice": "You are requesting as this clinic's manager. You can also request the Japanese and Chinese names and an opening-hours note. Every request is applied after an administrator reviews it.",
+    "closure": {
+      "legend": "What happened?",
+      "states": {
+        "open": "Listed as open",
+        "closed": "Closed",
+        "moved": "Moved"
+      },
+      "choices": {
+        "closed": "It has closed",
+        "moved": "It has moved elsewhere"
+      },
+      "note": "When it closed, or how you know (optional)",
+      "noteMoved": "The new address, and how you know"
+    }
   },
   "manager": {
     "link": "Apply as the clinic's manager",

@@ -169,6 +169,23 @@ export async function decideEdit(form: FormData) {
   revalidatePath(`/${lang}/hospitals/${request.hospital_id}`);
 }
 
+/** Shows a hospital as open again after a closure or move was approved by mistake (or reversed). */
+export async function reopenHospital(form: FormData) {
+  const profile = await getProfile();
+  if (!profile?.is_admin) throw new Error("forbidden");
+
+  const hospitalId = String(form.get("hospitalId") ?? "");
+  if (!UUID.test(hospitalId)) throw new Error("invalid hospital");
+
+  // 'not_closed' means someone else already did it: nothing to do.
+  const { error } = await createAdminClient().rpc("reopen_hospital", { p_hospital: hospitalId, p_admin: profile.id });
+  if (error) throw new Error("reopen failed");
+
+  const lang = hasLocale(String(form.get("lang") ?? "")) ? String(form.get("lang")) : "en";
+  revalidatePath(`/${lang}/admin/edits`);
+  revalidatePath(`/${lang}/hospitals/${hospitalId}`);
+}
+
 /**
  * Decides a hospital-manager application after looking at the proof. A hospital has at most
  * MAX_MANAGERS active managers; approving past that does nothing (the page disables the button).
