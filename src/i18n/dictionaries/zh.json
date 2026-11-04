@@ -333,7 +333,8 @@
       "ctaNote": "小票将被私密保存，仅用于验证。",
       "sourceTitle": "信息来源",
       "sourceBody": "名称、地址和电话来自 Naver 地图搜索信息，可能会变更。"
-    }
+    },
+    "homepage": "官方网站"
   },
   "review": {
     "title": "撰写评价",
@@ -651,6 +652,41 @@
         "restoreConfirm": "要重新显示这条评价吗？"
       },
       "note": "隐藏前请确认评价确实违反规则。举报人的姓名不会显示给作者。"
+    },
+    "editsLink": {
+      "title": "诊所信息修改申请",
+      "body": "查看并处理会员提交的电话号码、官方网站、英文名称修改申请。",
+      "count": "待处理 {n} 件",
+      "open": "查看申请"
+    },
+    "edits": {
+      "breadcrumb": "首页 / 管理员 / 修改申请",
+      "title": "诊所信息修改申请",
+      "subtitle": "对比当前内容与建议内容后批准或驳回。批准后的内容会更新,公共数据重新获取后也会保留。",
+      "back": "管理员首页",
+      "queueTitle": "待审核",
+      "open": "待处理",
+      "empty": "没有需要审核的申请。",
+      "card": {
+        "requester": "申请人",
+        "field": "项目",
+        "current": "当前内容",
+        "proposed": "建议内容",
+        "note": "说明",
+        "none": "无",
+        "reasonPlaceholder": "驳回原因(选填,会显示给申请人)",
+        "approve": "批准并更新",
+        "approveOther": "标记为已处理",
+        "reject": "驳回"
+      },
+      "recent": {
+        "title": "最近处理",
+        "empty": "还没有处理过申请。",
+        "approved": "已批准",
+        "rejected": "已驳回",
+        "by": "处理人"
+      },
+      "note": "“其他错误信息”没有具体内容,批准后不会自动更改任何数据。请确认后自行处理,再点击“标记为已处理”。"
     }
   },
   "common": {
@@ -759,5 +795,55 @@
         "generic": "出了点问题，请重试。"
       }
     }
+  },
+  "edit": {
+    "link": "申请修改信息",
+    "back": "返回诊所信息",
+    "title": "申请修改诊所信息",
+    "subtitle": "您可以更正电话号码、官方网站或英文名称。管理员确认后才会更新。",
+    "field": "要修改的项目",
+    "fields": {
+      "phone": "电话号码",
+      "homepage": "官方网站",
+      "name_en": "英文名称",
+      "other": "其他错误信息(停业、搬迁等)"
+    },
+    "current": "当前内容",
+    "empty": "无",
+    "value": "新内容",
+    "placeholders": {
+      "phone": "例:02-1234-5678",
+      "homepage": "例:https://example.com",
+      "name_en": "例:Abijou Clinic"
+    },
+    "note": "依据或说明(选填)",
+    "noteOther": "请说明哪里有误",
+    "noteHelp": "供管理员确认时参考,最多 300 字。",
+    "submit": "提交申请",
+    "submitting": "提交中…",
+    "done": "已收到您的申请。管理员确认后才会更新。",
+    "another": "再申请修改其他项目",
+    "errors": {
+      "invalid": "请检查输入内容。电话号码、官方网站和英文名称的格式必须正确,“其他”需要填写说明。",
+      "same": "与当前登记的内容相同。",
+      "duplicate": "该项目已有正在审核的申请。",
+      "suspended": "已被停用的账号无法提交申请。",
+      "limit": "已达到每日可提交申请的上限,请明天再试。",
+      "notLoggedIn": "请先登录。",
+      "generic": "未能提交申请,请稍后再试。"
+    },
+    "mine": "我对该诊所提交的申请",
+    "mineEmpty": "还没有提交过申请。",
+    "reason": "原因",
+    "status": {
+      "open": "审核中",
+      "approved": "已更新",
+      "rejected": "已驳回",
+      "handled": "已处理"
+    },
+    "note2": "申请经管理员确认后才会更新,已更新的内容在公共数据重新获取后也会保留。",
+    "myTitle": "我的修改申请",
+    "myNav": "我的修改申请({n})",
+    "myEmpty": "还没有提交过修改申请。"
   }
 }

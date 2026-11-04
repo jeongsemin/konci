@@ -131,6 +131,43 @@ export async function restoreReview(form: FormData) {
   revalidatePath(`/${hasLocale(lang) ? lang : "en"}/admin/reports`);
 }
 
+/**
+ * Decides one edit request. Approving applies the change to the hospital, locks that field against the
+ * next HIRA import and writes the history, all in one database transaction (apply_edit_request).
+ */
+export async function decideEdit(form: FormData) {
+  const profile = await getProfile();
+  if (!profile?.is_admin) throw new Error("forbidden");
+
+  const requestId = String(form.get("requestId") ?? "");
+  const decision = form.get("decision");
+  if (!UUID.test(requestId)) throw new Error("invalid request");
+  if (decision !== "approve" && decision !== "reject") throw new Error("invalid decision");
+  const reason = String(form.get("reason") ?? "").replace(/\s+/g, " ").trim().slice(0, 200);
+
+  const admin = createAdminClient();
+  const { data: request } = await admin.from("hospital_edit_requests").select("hospital_id").eq("id", requestId).maybeSingle();
+  if (!request) return;
+
+  if (decision === "approve") {
+    // 'not_open' means another administrator decided first: nothing to do.
+    const { error } = await admin.rpc("apply_edit_request", { p_request: requestId, p_admin: profile.id });
+    if (error) throw new Error("apply failed");
+  } else {
+    // Only a still-open request can be rejected, so two administrators can't overwrite each other.
+    const { error } = await admin
+      .from("hospital_edit_requests")
+      .update({ status: "rejected", reject_reason: reason || null, resolved_by: profile.id, resolved_at: new Date().toISOString() })
+      .eq("id", requestId)
+      .eq("status", "open");
+    if (error) throw new Error("reject failed");
+  }
+
+  const lang = hasLocale(String(form.get("lang") ?? "")) ? String(form.get("lang")) : "en";
+  revalidatePath(`/${lang}/admin/edits`);
+  revalidatePath(`/${lang}/hospitals/${request.hospital_id}`);
+}
+
 export type GrantState = { ok?: true; error?: RoleError | "invalidEmail" | "notFound" | "forbidden" | "generic" } | null;
 
 async function adminCount(admin: ReturnType<typeof createAdminClient>) {

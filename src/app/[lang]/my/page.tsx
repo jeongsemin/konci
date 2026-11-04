@@ -22,7 +22,7 @@ export default async function MyPage({ params }: PageProps<"/[lang]/my">) {
   const dict = await getDictionary(lang);
   const supabase = await createClient();
 
-  const [{ data: auth }, { data: receipts }, { data: reviews }, { data: details }, { data: suspension }] = await Promise.all([
+  const [{ data: auth }, { data: receipts }, { data: reviews }, { data: details }, { data: suspension }, { data: editRequests }] = await Promise.all([
     supabase.auth.getUser(),
     supabase
       .from("receipts")
@@ -37,6 +37,13 @@ export default async function MyPage({ params }: PageProps<"/[lang]/my">) {
     // Both tables are private: RLS returns only the caller's own row.
     supabase.from("member_details").select("country, age_group, gender").eq("user_id", profile.id).maybeSingle(),
     supabase.from("suspensions").select("reason").eq("user_id", profile.id).maybeSingle(),
+    // Before 0006 is applied the table doesn't exist; the list is then just empty.
+    supabase
+      .from("hospital_edit_requests")
+      .select("id, field, value, status, reject_reason, created_at, hospitals(id, name)")
+      .eq("requester_id", profile.id)
+      .order("created_at", { ascending: false })
+      .limit(20),
   ]);
 
   const regionNames = new Intl.DisplayNames(lang, { type: "region" });
@@ -52,6 +59,7 @@ export default async function MyPage({ params }: PageProps<"/[lang]/my">) {
       email={auth.user?.email ?? null}
       receipts={receipts ?? []}
       reviews={reviews ?? []}
+      editRequests={editRequests ?? []}
       countries={countries}
       details={details ?? { country: null, age_group: null, gender: null }}
       suspension={suspension ? { reason: suspension.reason } : null}

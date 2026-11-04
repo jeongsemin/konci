@@ -85,6 +85,8 @@ export default async function AdminPage({ params }: PageProps<"/[lang]/admin">) 
 
   // Before 0003 is applied the table doesn't exist; the count then just stays 0.
   const { count: openReports } = await admin.from("review_reports").select("id", { count: "exact", head: true }).eq("status", "open");
+  // Same for edit requests (migration 0006).
+  const { count: openEdits } = await admin.from("hospital_edit_requests").select("id", { count: "exact", head: true }).eq("status", "open");
 
   const { data: adminRows } = await admin
     .from("profiles")
@@ -109,6 +111,7 @@ export default async function AdminPage({ params }: PageProps<"/[lang]/admin">) 
       admins={admins}
       currentId={profile.id}
       openReports={openReports ?? 0}
+      openEdits={openEdits ?? 0}
     />
   );
 }

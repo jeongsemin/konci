@@ -333,7 +333,8 @@
       "ctaNote": "Your receipt is stored privately and used only for verification.",
       "sourceTitle": "Information source",
       "sourceBody": "Name, address and phone number come from Naver Maps search and may change."
-    }
+    },
+    "homepage": "Website"
   },
   "review": {
     "title": "Write a review",
@@ -651,6 +652,41 @@
         "restoreConfirm": "Show this review again?"
       },
       "note": "Check that the review really breaks the rules before hiding it. Reporters' names are not shown to the author."
+    },
+    "editsLink": {
+      "title": "Clinic correction requests",
+      "body": "Review and apply members' requests to correct a phone number, website or English name.",
+      "count": "{n} waiting",
+      "open": "View requests"
+    },
+    "edits": {
+      "breadcrumb": "Home / Admin / Corrections",
+      "title": "Clinic correction requests",
+      "subtitle": "Compare the current and the proposed value, then approve or reject. An approved value is applied and kept when the public data is refreshed.",
+      "back": "Admin home",
+      "queueTitle": "Waiting for review",
+      "open": "Waiting",
+      "empty": "No requests to review.",
+      "card": {
+        "requester": "Requested by",
+        "field": "Item",
+        "current": "Current",
+        "proposed": "Proposed",
+        "note": "Explanation",
+        "none": "None",
+        "reasonPlaceholder": "Reason for rejecting (optional, shown to the member)",
+        "approve": "Approve and apply",
+        "approveOther": "Mark as handled",
+        "reject": "Reject"
+      },
+      "recent": {
+        "title": "Recently handled",
+        "empty": "Nothing handled yet.",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "by": "by"
+      },
+      "note": "\"Something else that is wrong\" has no value, so approving it changes nothing by itself. Check it, fix it yourself, then press \"Mark as handled\"."
     }
   },
   "common": {
@@ -759,5 +795,55 @@
         "generic": "Something went wrong. Please try again."
       }
     }
+  },
+  "edit": {
+    "link": "Request a correction",
+    "back": "Back to the clinic",
+    "title": "Request a correction",
+    "subtitle": "You can correct the phone number, website or English name. An administrator reviews it before it is applied.",
+    "field": "What to correct",
+    "fields": {
+      "phone": "Phone number",
+      "homepage": "Website",
+      "name_en": "English name",
+      "other": "Something else that is wrong (closed, moved…)"
+    },
+    "current": "Current",
+    "empty": "None",
+    "value": "New value",
+    "placeholders": {
+      "phone": "e.g. 02-1234-5678",
+      "homepage": "e.g. https://example.com",
+      "name_en": "e.g. Abijou Clinic"
+    },
+    "note": "Source or explanation (optional)",
+    "noteOther": "Please explain what is wrong",
+    "noteHelp": "Helps the administrator check it. Up to 300 characters.",
+    "submit": "Send request",
+    "submitting": "Sending…",
+    "done": "Request received. An administrator will review it before it is applied.",
+    "another": "Request another correction",
+    "errors": {
+      "invalid": "Please check your input. The phone number, website and English name must be in a valid format, and \"something else\" needs an explanation.",
+      "same": "That is already what is registered.",
+      "duplicate": "You already have a request for this item under review.",
+      "suspended": "Suspended accounts cannot send requests.",
+      "limit": "You have reached the daily limit for requests. Please try again tomorrow.",
+      "notLoggedIn": "Please sign in.",
+      "generic": "Could not send the request. Please try again in a moment."
+    },
+    "mine": "My requests for this clinic",
+    "mineEmpty": "No requests yet.",
+    "reason": "Reason",
+    "status": {
+      "open": "Under review",
+      "approved": "Applied",
+      "rejected": "Rejected",
+      "handled": "Handled"
+    },
+    "note2": "Requests are applied after an administrator reviews them, and an applied value is kept when the public data is refreshed.",
+    "myTitle": "My correction requests",
+    "myNav": "My correction requests ({n})",
+    "myEmpty": "You have not sent any correction requests."
   }
 }

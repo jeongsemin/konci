@@ -27,6 +27,16 @@ export type MyReview = {
   hospitals: unknown;
 };
 
+export type MyEditRequest = {
+  id: string;
+  field: string;
+  value: string | null;
+  status: string;
+  reject_reason: string | null;
+  created_at: string;
+  hospitals: unknown;
+};
+
 const fill = (template: string, values: Record<string, string | number>) =>
   template.replace(/\{(\w+)\}/g, (_, key) => String(values[key] ?? ""));
 
@@ -47,6 +57,7 @@ export function MyView({
   email,
   receipts,
   reviews,
+  editRequests,
   countries,
   details,
   suspension,
@@ -57,6 +68,7 @@ export function MyView({
   email: string | null;
   receipts: MyReceipt[];
   reviews: MyReview[];
+  editRequests: MyEditRequest[];
   countries: { code: string; name: string }[];
   details: { country: string | null; age_group: string | null; gender: string | null };
   suspension: { reason: string | null } | null;
@@ -88,6 +100,7 @@ export function MyView({
             <p className="text-sm font-bold text-brand">{t.nav.activity}</p>
             <a href="#receipts" className={navLink}>{fill(t.nav.receipts, { n: receipts?.length ?? 0 })}</a>
             <a href="#reviews" className={navLink}>{fill(t.nav.reviews, { n: reviews?.length ?? 0 })}</a>
+            <a href="#edits" className={navLink}>{fill(dict.edit.myNav, { n: editRequests.length })}</a>
             <a href="#account" className={navLink}>{t.nav.account}</a>
             <a href="#language" className={navLink}>{t.nav.language}</a>
             <form action="/auth/logout" method="post">
@@ -205,6 +218,48 @@ export function MyView({
                         <DeleteReviewForm lang={lang} reviewId={r.id} label={t.reviews.delete} confirmText={t.reviews.deleteConfirm} />
                         <p className="text-xs text-muted">{suspension || r.hidden_at ? t.reviews.hidden : t.reviews.public}</p>
                       </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </section>
+
+          {/* My edit requests */}
+          <section id="edits" className="scroll-mt-6 space-y-5">
+            <h2 className="text-2xl font-bold leading-snug md:text-[28px]">{dict.edit.myTitle}</h2>
+            {editRequests.length === 0 ? (
+              <p className="text-sm text-muted">{dict.edit.myEmpty}</p>
+            ) : (
+              <ul className="divide-y divide-border rounded-md border border-border bg-card">
+                {editRequests.map((r) => {
+                  const hospital = r.hospitals as unknown as { id: string; name: string } | null;
+                  const field = dict.edit.fields[r.field as keyof typeof dict.edit.fields] ?? r.field;
+                  return (
+                    <li key={r.id} className="flex flex-wrap items-start justify-between gap-3 p-4 text-sm">
+                      <div className="min-w-0 space-y-0.5">
+                        <p className="font-bold">
+                          {hospital ? (
+                            <Link href={`/${lang}/hospitals/${hospital.id}`} className="hover:text-brand">
+                              {hospital.name}
+                            </Link>
+                          ) : (
+                            "—"
+                          )}{" "}
+                          · {field}
+                        </p>
+                        {r.value && <p className="break-all text-xs text-muted">{r.value}</p>}
+                        <p className="text-[11px] text-muted">{new Date(r.created_at).toLocaleDateString(lang)}</p>
+                        {r.status === "rejected" && r.reject_reason && (
+                          <p className="text-xs text-error">
+                            {dict.edit.reason}: {r.reject_reason}
+                          </p>
+                        )}
+                      </div>
+                      <span className={`rounded-full px-3 py-1 text-xs font-bold ${STATUS_STYLE[r.status === "open" ? "pending" : r.status] ?? ""}`}>
+                        {/* A free-text report has no value to apply, so approving it means "handled". */}
+                        {r.field === "other" && r.status === "approved" ? dict.edit.status.handled : dict.edit.status[r.status as keyof typeof dict.edit.status]}
+                      </span>
                     </li>
                   );
                 })}

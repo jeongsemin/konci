@@ -45,6 +45,7 @@ export function AdminView({
   admins,
   currentId,
   openReports,
+  openEdits,
 }: {
   lang: Locale;
   dict: Dictionary;
@@ -54,6 +55,7 @@ export function AdminView({
   admins: AdminItem[];
   currentId: string;
   openReports: number;
+  openEdits: number;
 }) {
   const t = dict.admin;
   const stats = [
@@ -102,6 +104,24 @@ export function AdminView({
             className="flex min-h-12 items-center justify-center rounded-sm bg-brand px-5 py-3 text-sm font-bold text-white hover:bg-brand-strong"
           >
             {t.reportsLink.open}
+          </Link>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-md border border-border bg-card p-5">
+          <div className="space-y-1">
+            <p className="flex flex-wrap items-center gap-2 text-[15px] font-bold">
+              {t.editsLink.title}
+              {openEdits > 0 && (
+                <span className="rounded-full bg-star-soft px-2.5 py-0.5 text-[11px] text-star">{t.editsLink.count.replace("{n}", String(openEdits))}</span>
+              )}
+            </p>
+            <p className="text-xs text-muted">{t.editsLink.body}</p>
+          </div>
+          <Link
+            href={`/${lang}/admin/edits`}
+            className="flex min-h-12 items-center justify-center rounded-sm bg-brand px-5 py-3 text-sm font-bold text-white hover:bg-brand-strong"
+          >
+            {t.editsLink.open}
           </Link>
         </div>
 
