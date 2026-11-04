@@ -27,7 +27,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Only clinics that have at least one review are worth indexing.
   try {
     const admin = createAdminClient();
-    const [{ data }, { data: suspended }] = await Promise.all([
+    const [{ data }, { data: suspended }, { data: closed }] = await Promise.all([
       admin
         .from("reviews")
         .select("hospital_id, user_id, created_at")
@@ -35,12 +35,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         .order("created_at", { ascending: false })
         .limit(5000),
       admin.from("suspensions").select("user_id"),
+      // Clinics confirmed as closed or moved are not advertised to search engines.
+      admin.from("hospitals").select("id").not("closed_at", "is", null),
     ]);
     // The service role bypasses RLS, so hidden reviews are filtered above and reviews of suspended authors here.
     const hidden = new Set((suspended ?? []).map((s) => s.user_id));
+    const gone = new Set((closed ?? []).map((h) => h.id));
     const latest = new Map<string, string>();
     for (const r of data ?? []) {
-      if (!hidden.has(r.user_id) && !latest.has(r.hospital_id)) latest.set(r.hospital_id, r.created_at);
+      if (!hidden.has(r.user_id) && !gone.has(r.hospital_id) && !latest.has(r.hospital_id)) latest.set(r.hospital_id, r.created_at);
     }
     for (const [id, created] of latest) entries.push(...localized(`/hospitals/${id}`, new Date(created), 0.7));
   } catch {

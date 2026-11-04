@@ -130,7 +130,9 @@ export async function searchHospitals(input: SearchInput): Promise<SearchOutcome
     let query = admin
       .from("hospital_directory")
       .select(COLUMNS, select)
-      .or(`type_code.in.(${MEDICAL_TYPES.join(",")}),type_code.is.null`);
+      .or(`type_code.in.(${MEDICAL_TYPES.join(",")}),type_code.is.null`)
+      // Clinics reported and confirmed as closed or moved are not offered any more.
+      .is("closed_at", null);
 
     // The English, Japanese and Chinese names (set from approved requests) count like the Korean name.
     // alt_names holds them joined by spaces and is never null, so "does not match" needs no special case.

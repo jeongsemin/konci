@@ -62,7 +62,8 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
       .select("hospital_id, review_count, avg_rating, fluent_english_count, director_count")
       .gt("review_count", 0)
       .order("review_count", { ascending: false })
-      .limit(4),
+      // A few extra, so closed clinics (dropped below) don't leave the list short.
+      .limit(12),
     supabase
       .from("reviews")
       .select("id, rating, body, treatment, visit_date, created_at, profiles(display_name), hospitals(id, name)")
@@ -74,11 +75,14 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
         .from("hospitals")
         .select("id, name, category, road_address, address, sido, sgg")
         .in("id", topStats.map((s) => s.hospital_id))
+        .is("closed_at", null)
     : { data: [] };
-  const featured = (topStats ?? []).flatMap((s) => {
-    const hospital = topHospitals?.find((x) => x.id === s.hospital_id);
-    return hospital ? [{ ...hospital, ...s }] : [];
-  });
+  const featured = (topStats ?? [])
+    .flatMap((s) => {
+      const hospital = topHospitals?.find((x) => x.id === s.hospital_id);
+      return hospital ? [{ ...hospital, ...s }] : [];
+    })
+    .slice(0, 4);
 
   return (
     <>

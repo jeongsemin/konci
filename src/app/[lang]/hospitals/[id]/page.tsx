@@ -129,6 +129,16 @@ export default async function HospitalPage({ params, searchParams }: PageProps<"
             )}
             <h1 className="text-3xl font-bold leading-snug md:text-[40px]">{hospital.name}</h1>
             {namesLine(hospital) && <p className="text-base text-muted">{namesLine(hospital)}</p>}
+            {hospital.closed_at && (
+              <div role="status" className="space-y-1 rounded-md border border-error bg-error-soft p-4">
+                <p className="text-sm font-bold text-error">{dict.hospital.closed[hospital.closed_reason === "moved" ? "moved" : "closed"]}</p>
+                {hospital.closed_note && (
+                  <p className="break-words text-xs text-muted">
+                    {dict.hospital.closed[hospital.closed_reason === "moved" ? "noteMoved" : "noteClosed"]}: {hospital.closed_note}
+                  </p>
+                )}
+              </div>
+            )}
             <div className="flex items-center gap-1.5">
               {stats.total > 0 ? (
                 <>
