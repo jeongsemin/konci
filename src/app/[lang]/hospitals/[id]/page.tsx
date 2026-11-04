@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BadgeCheck, ExternalLink, Info, MapPin, PenLine, Phone } from "lucide-react";
+import { BadgeCheck, ExternalLink, Globe, Info, MapPin, PenLine, Phone } from "lucide-react";
 import { hasLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
 import { aggregateReviews, type ReviewRow } from "@/lib/search-params";
@@ -128,6 +128,7 @@ export default async function HospitalPage({ params, searchParams }: PageProps<"
               <p className="text-[11px] text-brand">{categoryLine(hospital.category, hospital.sido, hospital.sgg)}</p>
             )}
             <h1 className="text-3xl font-bold leading-snug md:text-[40px]">{hospital.name}</h1>
+            {hospital.name_en && <p className="text-base text-muted">{hospital.name_en}</p>}
             <div className="flex items-center gap-1.5">
               {stats.total > 0 ? (
                 <>
@@ -186,7 +187,24 @@ export default async function HospitalPage({ params, searchParams }: PageProps<"
                   </dd>
                 </div>
               )}
+              {/* Only web links are shown as links, whatever the column holds. */}
+              {hospital.homepage && /^https?:\/\//i.test(hospital.homepage) && (
+                <div className="space-y-1">
+                  <dt className="flex items-center gap-1.5 text-[15px] font-bold">
+                    <Globe className="size-4 text-muted" aria-hidden />
+                    {dict.hospital.homepage}
+                  </dt>
+                  <dd className="text-sm">
+                    <a href={hospital.homepage} target="_blank" rel="nofollow noopener noreferrer" className="break-all hover:text-brand">
+                      {hospital.homepage}
+                    </a>
+                  </dd>
+                </div>
+              )}
             </dl>
+            <Link href={`/${lang}/hospitals/${id}/edit`} className="inline-block text-sm font-bold text-brand hover:underline">
+              {dict.edit.link} →
+            </Link>
             <div className="space-y-3 rounded-md border border-border bg-card p-5">
               <p className="text-[15px] font-bold">{t.mapTitle}</p>
               <div className="flex flex-wrap gap-3">

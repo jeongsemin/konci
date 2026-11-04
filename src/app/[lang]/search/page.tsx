@@ -369,6 +369,7 @@ function ResultCard({ r, lang, dict, selected, toggleHref }: { r: SearchResult; 
           {r.name}
         </Link>
       </h2>
+      {r.name_en && <p className="text-xs text-muted">{r.name_en}</p>}
       <p className="text-xs">
         {r.review_count > 0 ? (
           <>
