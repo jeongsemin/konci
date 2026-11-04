@@ -4,7 +4,7 @@ import { Info } from "lucide-react";
 import { hasLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
 import { requireProfile } from "@/lib/auth";
-import { isEditField } from "@/lib/edit-request";
+import { fieldsFor, isEditField } from "@/lib/edit-request";
 import { categoryLine } from "@/lib/region";
 import { createClient } from "@/lib/supabase/server";
 import { Container } from "@/components/container";
@@ -31,10 +31,20 @@ export default async function EditRequestPage({ params }: PageProps<"/[lang]/hos
 
   const { data: hospital } = await supabase
     .from("hospitals")
-    .select("id, name, category, sido, sgg, road_address, address, phone, homepage, name_en")
+    .select("id, name, category, sido, sgg, road_address, address, phone, homepage, name_en, name_ja, name_zh, hours_note")
     .eq("id", id)
     .maybeSingle();
   if (!hospital) notFound();
+
+  // RLS: a member sees only their own assignments, so this says whether *they* manage this hospital.
+  const { data: manager } = await supabase
+    .from("hospital_managers")
+    .select("id")
+    .eq("hospital_id", id)
+    .eq("user_id", profile.id)
+    .eq("status", "active")
+    .maybeSingle();
+  const isManager = Boolean(manager);
 
   // RLS: a member sees only their own requests.
   const { data: mine } = await supabase
@@ -81,10 +91,23 @@ export default async function EditRequestPage({ params }: PageProps<"/[lang]/hos
       </section>
 
       <Container className="max-w-3xl space-y-10 pb-16">
+        {isManager && (
+          <p role="status" className="rounded-md bg-brand-soft p-4 text-xs font-bold leading-relaxed text-brand">
+            {t.managerNotice}
+          </p>
+        )}
         <EditForm
           lang={lang}
           hospitalId={id}
-          current={{ phone: hospital.phone, homepage: hospital.homepage, name_en: hospital.name_en }}
+          fields={fieldsFor(isManager)}
+          current={{
+            phone: hospital.phone,
+            homepage: hospital.homepage,
+            name_en: hospital.name_en,
+            name_ja: hospital.name_ja,
+            name_zh: hospital.name_zh,
+            hours_note: hospital.hours_note,
+          }}
           text={formText}
         />
 

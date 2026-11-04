@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { hasLocale } from "@/i18n/config";
-import { DAILY_LIMIT, isSameValue, parseEditInput } from "@/lib/edit-request";
+import { DAILY_LIMIT, MANAGER_DAILY_LIMIT, fieldsFor, isSameValue, parseEditInput } from "@/lib/edit-request";
 import { createClient } from "@/lib/supabase/server";
 
 export type EditState = {
@@ -10,23 +10,39 @@ export type EditState = {
   error?: "invalid" | "same" | "duplicate" | "suspended" | "limit" | "notLoggedIn" | "generic";
 } | null;
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function submitEditRequest(_prev: EditState, form: FormData): Promise<EditState> {
-  const input = parseEditInput((key) => {
+  const get = (key: string) => {
     const v = form.get(key);
     return typeof v === "string" ? v : null;
-  });
-  if (!input) return { error: "invalid" };
+  };
 
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) return { error: "notLoggedIn" };
   const me = auth.user.id;
 
+  // The hospital's own manager may ask for more. A member sees only their own rows (RLS), and the
+  // database decides again on insert, so a forged field can't get through either way.
+  const hospitalId = (get("hospitalId") ?? "").trim();
+  const { data: manager } = UUID.test(hospitalId)
+    ? await supabase.from("hospital_managers").select("id").eq("hospital_id", hospitalId).eq("user_id", me).eq("status", "active").maybeSingle()
+    : { data: null };
+  const isManager = Boolean(manager);
+
+  const input = parseEditInput(get, fieldsFor(isManager));
+  if (!input) return { error: "invalid" };
+
   // RLS enforces suspension too; checking first lets us tell the member why.
   const { data: suspension } = await supabase.from("suspensions").select("user_id").eq("user_id", me).maybeSingle();
   if (suspension) return { error: "suspended" };
 
-  const { data: hospital } = await supabase.from("hospitals").select("phone, homepage, name_en").eq("id", input.hospitalId).maybeSingle();
+  const { data: hospital } = await supabase
+    .from("hospitals")
+    .select("phone, homepage, name_en, name_ja, name_zh, hours_note")
+    .eq("id", input.hospitalId)
+    .maybeSingle();
   if (!hospital) return { error: "invalid" };
   if (input.field !== "other" && input.value && isSameValue(input.field, input.value, hospital[input.field])) return { error: "same" };
 
@@ -36,7 +52,7 @@ export async function submitEditRequest(_prev: EditState, form: FormData): Promi
     .select("id", { count: "exact", head: true })
     .eq("requester_id", me)
     .gte("created_at", since);
-  if ((count ?? 0) >= DAILY_LIMIT) return { error: "limit" };
+  if ((count ?? 0) >= (isManager ? MANAGER_DAILY_LIMIT : DAILY_LIMIT)) return { error: "limit" };
 
   const { error } = await supabase
     .from("hospital_edit_requests")

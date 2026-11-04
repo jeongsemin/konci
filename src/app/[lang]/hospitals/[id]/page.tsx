@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BadgeCheck, ExternalLink, Globe, Info, MapPin, PenLine, Phone } from "lucide-react";
+import { BadgeCheck, Clock, ExternalLink, Globe, Info, MapPin, PenLine, Phone } from "lucide-react";
 import { hasLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
 import { aggregateReviews, type ReviewRow } from "@/lib/search-params";
-import { categoryLine } from "@/lib/region";
+import { categoryLine, namesLine } from "@/lib/region";
 import { createClient } from "@/lib/supabase/server";
 import { Container } from "@/components/container";
 import { StarRating } from "@/components/star-rating";
@@ -128,7 +128,7 @@ export default async function HospitalPage({ params, searchParams }: PageProps<"
               <p className="text-[11px] text-brand">{categoryLine(hospital.category, hospital.sido, hospital.sgg)}</p>
             )}
             <h1 className="text-3xl font-bold leading-snug md:text-[40px]">{hospital.name}</h1>
-            {hospital.name_en && <p className="text-base text-muted">{hospital.name_en}</p>}
+            {namesLine(hospital) && <p className="text-base text-muted">{namesLine(hospital)}</p>}
             <div className="flex items-center gap-1.5">
               {stats.total > 0 ? (
                 <>
@@ -201,10 +201,24 @@ export default async function HospitalPage({ params, searchParams }: PageProps<"
                   </dd>
                 </div>
               )}
+              {hospital.hours_note && (
+                <div className="space-y-1">
+                  <dt className="flex items-center gap-1.5 text-[15px] font-bold">
+                    <Clock className="size-4 text-muted" aria-hidden />
+                    {dict.hospital.hours}
+                  </dt>
+                  <dd className="text-sm">{hospital.hours_note}</dd>
+                </div>
+              )}
             </dl>
-            <Link href={`/${lang}/hospitals/${id}/edit`} className="inline-block text-sm font-bold text-brand hover:underline">
-              {dict.edit.link} →
-            </Link>
+            <p className="flex flex-wrap gap-x-6 gap-y-2 text-sm font-bold">
+              <Link href={`/${lang}/hospitals/${id}/edit`} className="text-brand hover:underline">
+                {dict.edit.link} →
+              </Link>
+              <Link href={`/${lang}/hospitals/${id}/manage`} className="text-muted hover:text-foreground hover:underline">
+                {dict.manager.link} →
+              </Link>
+            </p>
             <div className="space-y-3 rounded-md border border-border bg-card p-5">
               <p className="text-[15px] font-bold">{t.mapTitle}</p>
               <div className="flex flex-wrap gap-3">

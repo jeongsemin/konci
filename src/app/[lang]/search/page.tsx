@@ -4,7 +4,7 @@ import { Check, ChevronLeft, ChevronRight, Info, MapPin, SlidersHorizontal, Squa
 import { hasLocale, type Locale } from "@/i18n/config";
 import { getDictionary, type Dictionary } from "@/i18n/dictionaries";
 import { searchHospitals, type SearchResult } from "@/lib/hospital-search";
-import { categoryLine, regionLabel } from "@/lib/region";
+import { categoryLine, namesLine, regionLabel } from "@/lib/region";
 import {
   PAGE_SIZE,
   aggregateReviews,
@@ -369,7 +369,7 @@ function ResultCard({ r, lang, dict, selected, toggleHref }: { r: SearchResult; 
           {r.name}
         </Link>
       </h2>
-      {r.name_en && <p className="text-xs text-muted">{r.name_en}</p>}
+      {namesLine(r) && <p className="text-xs text-muted">{namesLine(r)}</p>}
       <p className="text-xs">
         {r.review_count > 0 ? (
           <>

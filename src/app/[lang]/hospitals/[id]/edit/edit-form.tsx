@@ -1,7 +1,7 @@
 "use client";
 
 import { startTransition, useActionState, useState, type FormEvent } from "react";
-import { EDIT_FIELDS, NOTE_MAX, type EditField } from "@/lib/edit-request";
+import { NOTE_MAX, type EditField } from "@/lib/edit-request";
 import { submitEditRequest, type EditState } from "./actions";
 
 type Text = {
@@ -24,6 +24,8 @@ type Text = {
 type Props = {
   lang: string;
   hospitalId: string;
+  /** The fields offered: a hospital's manager gets more than other members. */
+  fields: EditField[];
   current: Record<Exclude<EditField, "other">, string | null>;
   text: Text;
 };
@@ -34,9 +36,9 @@ export function EditForm(props: Props) {
   return <Form key={round} {...props} onAnother={() => setRound((n) => n + 1)} />;
 }
 
-function Form({ lang, hospitalId, current, text, onAnother }: Props & { onAnother: () => void }) {
+function Form({ lang, hospitalId, fields, current, text, onAnother }: Props & { onAnother: () => void }) {
   const [state, action, pending] = useActionState<EditState, FormData>(submitEditRequest, null);
-  const [field, setField] = useState<EditField>("phone");
+  const [field, setField] = useState<EditField>(fields[0]);
   // <form action> would reset the form after an error and wipe what the member typed.
   const submit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -68,7 +70,7 @@ function Form({ lang, hospitalId, current, text, onAnother }: Props & { onAnothe
 
       <fieldset className="space-y-2.5">
         <legend className="text-[13px] font-bold">{text.field}</legend>
-        {EDIT_FIELDS.map((f) => (
+        {fields.map((f) => (
           <label key={f} className="flex min-h-11 cursor-pointer items-center gap-3 text-sm">
             <input type="radio" name="field" value={f} checked={field === f} onChange={() => setField(f)} className="size-4 accent-brand" />
             {text.fields[f]}

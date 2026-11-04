@@ -11,6 +11,8 @@ export type SearchResult = {
   id: string;
   name: string;
   name_en: string | null;
+  name_ja: string | null;
+  name_zh: string | null;
   category: string | null;
   address: string | null;
   road_address: string | null;
@@ -48,7 +50,7 @@ export type SearchOutcome = {
 };
 
 const KEYWORD: Record<SearchType, string> = { all: "병원", derm: "피부과" };
-const COLUMNS = "id, name, name_en, category, address, road_address, sido, sgg, review_count, avg_rating, fluent_english_count, director_count";
+const COLUMNS = "id, name, name_en, name_ja, name_zh, category, address, road_address, sido, sgg, review_count, avg_rating, fluent_english_count, director_count";
 
 /**
  * How closely a hospital's name matches what was typed. In the default order every hospital of an
@@ -127,31 +129,29 @@ export async function searchHospitals(input: SearchInput): Promise<SearchOutcome
       .select(COLUMNS, select)
       .or(`type_code.in.(${MEDICAL_TYPES.join(",")}),type_code.is.null`);
 
-    // The English name, when an administrator has approved one, counts like the Korean name.
-    // Most hospitals have none (null), so "does not match" must also accept a missing English name.
+    // The English, Japanese and Chinese names (set from approved requests) count like the Korean name.
+    // alt_names holds them joined by spaces and is never null, so "does not match" needs no special case.
     switch (tier) {
       case "exact":
-        query = query.or(`name.ilike.${phrase},name_en.ilike.${phrase}`);
+        query = query.or(`name.ilike.${phrase},alt_names.ilike.${phrase}`);
         break;
       case "prefix":
         query = query
-          .or(`name.ilike.${phrase}%,name_en.ilike.${phrase}%`)
+          .or(`name.ilike.${phrase}%,alt_names.ilike.${phrase}%`)
           .not("name", "ilike", phrase)
-          .or(`name_en.is.null,name_en.not.ilike.${phrase}`);
+          .not("alt_names", "ilike", phrase);
         break;
       case "name":
-        for (const word of tokens) query = query.or(`name.ilike.%${word}%,name_en.ilike.%${word}%`);
-        query = query.not("name", "ilike", `${phrase}%`).or(`name_en.is.null,name_en.not.ilike.${phrase}%`);
+        for (const word of tokens) query = query.or(`name.ilike.%${word}%,alt_names.ilike.%${word}%`);
+        query = query.not("name", "ilike", `${phrase}%`).not("alt_names", "ilike", `${phrase}%`);
         break;
       case "rest":
       case "all":
         for (const word of tokens) {
-          query = query.or(`name.ilike.%${word}%,name_en.ilike.%${word}%,road_address.ilike.%${word}%,address.ilike.%${word}%`);
+          query = query.or(`name.ilike.%${word}%,alt_names.ilike.%${word}%,road_address.ilike.%${word}%,address.ilike.%${word}%`);
         }
-        // Not already listed under the name tiers: at least one word is missing from both names.
-        if (tier === "rest") {
-          query = query.or(tokens.map((w) => `and(name.not.ilike.%${w}%,or(name_en.is.null,name_en.not.ilike.%${w}%))`).join(","));
-        }
+        // Not already listed under the name tiers: at least one word is missing from every name.
+        if (tier === "rest") query = query.or(tokens.map((w) => `and(name.not.ilike.%${w}%,alt_names.not.ilike.%${w}%)`).join(","));
         break;
     }
 

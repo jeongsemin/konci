@@ -12,7 +12,18 @@ import { decideEdit } from "../actions";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 
-type Hospital = { id: string; name: string; sido: string | null; sgg: string | null; phone: string | null; homepage: string | null; name_en: string | null } | null;
+type Hospital = {
+  id: string;
+  name: string;
+  sido: string | null;
+  sgg: string | null;
+  phone: string | null;
+  homepage: string | null;
+  name_en: string | null;
+  name_ja: string | null;
+  name_zh: string | null;
+  hours_note: string | null;
+} | null;
 type Named = { display_name: string | null } | null;
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/admin/edits">): Promise<Metadata> {
@@ -33,12 +44,14 @@ export default async function EditsPage({ params }: PageProps<"/[lang]/admin/edi
 
   const admin = createAdminClient();
   // The table points at profiles twice (requester, resolver), so each embed names its foreign key.
-  const hospitalCols = "hospitals(id, name, sido, sgg, phone, homepage, name_en)";
+  const hospitalCols = "hospitals(id, name, sido, sgg, phone, homepage, name_en, name_ja, name_zh, hours_note)";
   const [{ data: open }, { data: done }] = await Promise.all([
     admin
       .from("hospital_edit_requests")
-      .select(`id, field, value, note, created_at, ${hospitalCols}, requester:profiles!hospital_edit_requests_requester_id_fkey(display_name)`)
+      .select(`id, field, value, note, by_manager, created_at, ${hospitalCols}, requester:profiles!hospital_edit_requests_requester_id_fkey(display_name)`)
       .eq("status", "open")
+      // A hospital's own manager first, then oldest first.
+      .order("by_manager", { ascending: false })
       .order("created_at")
       .limit(50),
     admin
@@ -89,6 +102,11 @@ export default async function EditsPage({ params }: PageProps<"/[lang]/admin/edi
                 return (
                   <li key={r.id} className="space-y-4 rounded-md border border-border bg-card p-5 md:p-6">
                     <div className="space-y-1">
+                      {r.by_manager && (
+                        <p>
+                          <span className="rounded-full bg-brand-soft px-2.5 py-0.5 text-[11px] font-bold text-brand">{t.card.byManager}</span>
+                        </p>
+                      )}
                       <p className="text-[19px] font-bold leading-snug">
                         {hospital ? (
                           <Link href={`/${lang}/hospitals/${hospital.id}`} className="hover:text-brand">
