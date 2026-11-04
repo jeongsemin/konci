@@ -2,7 +2,7 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { MEDICAL_TYPES } from "@/lib/hira";
 import { isMedical, toCandidate, type NaverLocalItem } from "@/lib/naver-local";
-import { PAGE_SIZE, areaSpec, searchTokens, type Sort } from "@/lib/search-params";
+import { PAGE_SIZE, areaSpec, searchTokens, treatmentSpec, type Sort } from "@/lib/search-params";
 import { planSlices } from "@/lib/search-plan";
 
 export type SearchType = "all" | "derm";
@@ -30,6 +30,8 @@ export type SearchInput = {
   type: SearchType;
   /** A key of the area filter (강남, 명동, …). */
   area?: string;
+  /** A treatment: found in the visible reviews, or "lists dermatology" for general skin care. */
+  treatment?: string;
   /** Minimum average rating x10. */
   rating?: number;
   reviews?: number;
@@ -98,8 +100,9 @@ export async function searchHospitals(input: SearchInput): Promise<SearchOutcome
   const q = input.q.trim().slice(0, 50);
   const spec = input.area ? areaSpec(input.area) : null;
   const tokens = searchTokens(q);
+  const treatment = input.treatment ? treatmentSpec(input.treatment) : null;
   const page = Math.max(1, input.page ?? 1);
-  if (tokens.length === 0 && !spec) return { results: [], total: 0, page };
+  if (tokens.length === 0 && !spec && !treatment) return { results: [], total: 0, page };
 
   const admin = createAdminClient();
   let error: SearchOutcome["error"];
@@ -160,6 +163,9 @@ export async function searchHospitals(input: SearchInput): Promise<SearchOutcome
       if (spec.sgg) query = query.eq("sgg", spec.sgg);
       if (spec.dongs) query = query.or(spec.dongs.map((d) => `road_address.ilike.%${d}%`).join(","));
     }
+    if (treatment?.derm) query = query.eq("derm_listed", true);
+    // treatments is the lower-cased text of the visible reviews' treatments (NULL when there are none).
+    else if (treatment) query = query.or(treatment.keywords.map((k) => `treatments.ilike.%${k}%`).join(","));
     if (input.rating) query = query.gte("avg_rating", input.rating / 10);
     if (input.reviews) query = query.gte("review_count", input.reviews);
     if (input.english) query = query.gt("fluent_english_count", 0);

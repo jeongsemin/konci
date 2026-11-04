@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import {
+  TREATMENT_KEYS,
   aggregateReviews,
   areaSpec,
   composeQuery,
@@ -10,6 +12,7 @@ import {
   searchTokens,
   toQueryString,
   toggleCompare,
+  treatmentSpec,
 } from "../src/lib/search-params.ts";
 
 const A = "11111111-1111-4111-8111-111111111111";
@@ -53,8 +56,9 @@ describe("searchTokens", () => {
 });
 
 describe("composeQuery", () => {
-  it("combines treatment and text and picks the dermatology keyword", () => {
-    assert.deepEqual(composeQuery(parseParams({ treatment: "레이저 토닝", q: "고운" })), { query: "레이저 토닝 고운", type: "derm" });
+  it("keeps a treatment out of the words (it is looked for in the reviews) but still picks the dermatology keyword", () => {
+    assert.deepEqual(composeQuery(parseParams({ treatment: "레이저 토닝", q: "고운" })), { query: "고운", type: "derm" });
+    assert.deepEqual(composeQuery(parseParams({ treatment: "레이저 토닝" })), { query: "", type: "derm" });
     assert.deepEqual(composeQuery(parseParams({ q: "서울병원" })), { query: "서울병원", type: "all" });
   });
   it("keeps a known area out of the words: it filters by location, not by name", () => {
@@ -86,9 +90,48 @@ describe("displayQuery", () => {
     assert.equal(displayQuery(f), "강남 아비쥬");
     assert.equal(displayQuery(f, "Gangnam"), "Gangnam 아비쥬");
   });
+  it("includes the treatment, under its display name, between the area and the words", () => {
+    const f = parseParams({ area: "강남", treatment: "레이저 토닝", q: "아비쥬" });
+    assert.equal(displayQuery(f), "강남 레이저 토닝 아비쥬");
+    assert.equal(displayQuery(f, "Gangnam", "Laser toning"), "Gangnam Laser toning 아비쥬");
+    assert.equal(displayQuery(parseParams({ treatment: "레이저 토닝" })), "레이저 토닝");
+  });
   it("is empty without an area or words, and does not repeat an unknown area", () => {
     assert.equal(displayQuery(parseParams({})), "");
     assert.equal(displayQuery(parseParams({ area: "제주" }), "Jeju"), "제주");
+  });
+});
+
+describe("treatmentSpec", () => {
+  const matches = (key: string, review: string) => treatmentSpec(key)!.keywords.some((k) => review.toLowerCase().includes(k));
+
+  it("expands a known treatment to the words used for it in all four languages", () => {
+    for (const review of ["레이저 토닝", "Laser toning", "レーザートーニング", "激光美白"]) assert.ok(matches("레이저 토닝", review), review);
+    for (const review of ["수분 관리", "Hydration facial", "保湿ケア", "补水护理", "水光针"]) assert.ok(matches("수분 관리", review), review);
+    for (const review of ["색소 상담", "Pigmentation consult", "シミ取り", "色素咨询", "기미 치료"]) assert.ok(matches("색소 상담", review), review);
+  });
+  it("does not match another treatment's reviews", () => {
+    assert.equal(matches("레이저 토닝", "수분 관리"), false);
+    assert.equal(matches("수분 관리", "Laser toning"), false);
+    assert.equal(matches("색소 상담", "Hydration care"), false);
+  });
+  it("treats general skin care as a hospital fact, not a review keyword", () => {
+    assert.deepEqual(treatmentSpec("피부 진료"), { derm: true, keywords: [] });
+  });
+  it("looks an unknown treatment up as written, lower-cased and without filter syntax", () => {
+    assert.deepEqual(treatmentSpec("Botox"), { keywords: ["botox"] });
+    assert.deepEqual(treatmentSpec("a,b(c)%d_e.f"), { keywords: ["a b c d e f"] });
+    assert.equal(treatmentSpec(""), null);
+    assert.equal(treatmentSpec(" ,() "), null);
+    assert.deepEqual(treatmentSpec("toString"), { keywords: ["tostring"] });
+  });
+  it("covers every treatment chip in every language, so a chip can never fall back to a name search", () => {
+    for (const lang of ["ko", "en", "ja", "zh"]) {
+      const dictionary = JSON.parse(readFileSync(new URL(`../src/i18n/dictionaries/${lang}.json`, import.meta.url), "utf8"));
+      const chips: { q: string }[] = dictionary.home.treatments.items;
+      assert.ok(chips.length > 0);
+      for (const chip of chips) assert.ok(TREATMENT_KEYS.includes(chip.q), `${lang}: ${chip.q}`);
+    }
   });
 });
 

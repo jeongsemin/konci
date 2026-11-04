@@ -241,7 +241,9 @@
       "label": "페이지 이동",
       "prev": "이전 페이지",
       "next": "다음 페이지"
-    }
+    },
+    "treatmentHelp": "레이저 토닝·수분 관리·색소 상담은 후기에 적힌 시술명을 기준으로, 일반 피부 진료는 피부과를 표방한 병원을 보여 줘요.",
+    "emptyTreatment": "이 시술이 적힌 후기가 아직 없어요. 후기가 쌓이면 결과가 늘어나요. 필터를 풀거나 지역·병원 이름으로 찾아 보세요."
   },
   "login": {
     "eyebrow": "A MORE FAMILIAR WAY TO FIND CARE",

@@ -85,17 +85,48 @@ const AREAS: Record<string, AreaSpec> = {
 export const areaSpec = (area: string): AreaSpec | null => (Object.hasOwn(AREAS, area) ? AREAS[area] : null);
 
 /**
- * The words to look for in a hospital's name or address: treatment plus free text.
- * A known area is a location filter instead; an unknown one (typed into the URL) is just a word.
+ * What a treatment filter looks for. HIRA's data has no treatments, so a treatment is found in the
+ * reviews: a hospital matches when a visible review names it. Reviews are written in any language
+ * and in the member's own words, so each known treatment lists the words used for it in all four
+ * languages. "General skin care" is a fact about the hospital instead: it lists dermatology.
+ */
+export type TreatmentSpec = { derm?: true; keywords: string[] };
+
+// The keys are the `q` values of the treatment chips (the same in every language).
+const TREATMENTS: Record<string, TreatmentSpec> = {
+  "레이저 토닝": { keywords: ["레이저", "토닝", "laser", "toning", "レーザー", "トーニング", "激光", "镭射", "鐳射"] },
+  "수분 관리": { keywords: ["수분", "보습", "hydrat", "moistur", "水光", "保湿", "补水", "補水"] },
+  "색소 상담": { keywords: ["색소", "기미", "잡티", "pigment", "melasma", "dark spot", "色素", "シミ", "色斑", "黄褐斑"] },
+  "피부 진료": { derm: true, keywords: [] },
+};
+
+export const TREATMENT_KEYS = Object.keys(TREATMENTS);
+
+/** A word safe to put in a PostgREST filter: no separators, brackets or wildcards. */
+const safeWord = (s: string) => s.replace(/[,()%*\\_.]/g, " ").replace(/\s+/g, " ").trim().toLowerCase();
+
+/**
+ * The filter for a treatment, or null for none. A known treatment (a chip) expands to its keywords;
+ * anything else typed into the URL is looked for as written in the reviews.
+ */
+export function treatmentSpec(treatment: string): TreatmentSpec | null {
+  if (Object.hasOwn(TREATMENTS, treatment)) return TREATMENTS[treatment];
+  const word = safeWord(treatment);
+  return word ? { keywords: [word] } : null;
+}
+
+/**
+ * The words to look for in a hospital's name or address: the free text, plus an unknown area typed
+ * into the URL. A known area is a location filter and a treatment is a review filter instead.
  */
 export function composeQuery(f: Filters): { query: string; type: "all" | "derm" } {
-  const query = [areaSpec(f.area) ? "" : f.area, f.treatment, f.q].filter(Boolean).join(" ").trim();
+  const query = [areaSpec(f.area) ? "" : f.area, f.q].filter(Boolean).join(" ").trim();
   return { query, type: f.treatment || f.q.includes("피부과") ? "derm" : "all" };
 }
 
-/** The phrase for the page title: a known area (under its display name) plus the words searched. */
-export function displayQuery(f: Filters, areaName = f.area): string {
-  return [areaSpec(f.area) ? areaName : "", composeQuery(f).query].filter(Boolean).join(" ");
+/** The phrase for the page title: a known area and the treatment (under their display names) plus the words searched. */
+export function displayQuery(f: Filters, areaName = f.area, treatmentName = f.treatment): string {
+  return [areaSpec(f.area) ? areaName : "", f.treatment ? treatmentName : "", composeQuery(f).query].filter(Boolean).join(" ");
 }
 
 /** Page numbers to show: always the first and last, the current page and its neighbours, with `null` for a gap. */

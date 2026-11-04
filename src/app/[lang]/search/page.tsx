@@ -10,6 +10,7 @@ import {
   aggregateReviews,
   areaSpec,
   composeQuery,
+  treatmentSpec,
   displayQuery,
   pageWindow,
   parseParams,
@@ -71,9 +72,9 @@ export default async function SearchPage({ params, searchParams }: PageProps<"/[
   const f = parseParams(await searchParams);
 
   const { query, type } = composeQuery(f);
-  const searched = Boolean(query || areaSpec(f.area));
+  const searched = Boolean(query || areaSpec(f.area) || treatmentSpec(f.treatment));
   const outcome = searched
-    ? await searchHospitals({ q: query, type, area: f.area, rating: f.rating, reviews: f.reviews, english: f.english, director: f.director, sort: f.sort, page: f.page })
+    ? await searchHospitals({ q: query, type, area: f.area, treatment: f.treatment, rating: f.rating, reviews: f.reviews, english: f.english, director: f.director, sort: f.sort, page: f.page })
     : { results: [] as SearchResult[], total: 0, page: 1, error: undefined };
   const results = outcome.results;
   const totalPages = Math.max(1, Math.ceil(outcome.total / PAGE_SIZE));
@@ -84,7 +85,7 @@ export default async function SearchPage({ params, searchParams }: PageProps<"/[
   const reset: Partial<Filters> = { area: "", treatment: "", rating: 0, reviews: 0, english: false, director: false };
 
   const label = (items: { name: string; q: string }[], q: string) => items.find((i) => i.q === q)?.name ?? q;
-  const phrase = displayQuery(f, label(dict.home.areas.items, f.area));
+  const phrase = displayQuery(f, label(dict.home.areas.items, f.area), label(dict.home.treatments.items, f.treatment));
   const chips: { key: string; text: string; patch: Partial<Filters> }[] = [
     f.area && { key: "area", text: label(dict.home.areas.items, f.area), patch: { area: "" } },
     f.treatment && { key: "treatment", text: label(dict.home.treatments.items, f.treatment), patch: { treatment: "" } },
@@ -168,7 +169,7 @@ export default async function SearchPage({ params, searchParams }: PageProps<"/[
             ) : outcome.results.length === 0 && outcome.error ? (
               <p className="text-sm text-error">{t.error}</p>
             ) : results.length === 0 ? (
-              <p className="text-sm text-muted">{t.empty}</p>
+              <p className="text-sm text-muted">{f.treatment && !treatmentSpec(f.treatment)?.derm ? t.emptyTreatment : t.empty}</p>
             ) : (
               <ul className="space-y-4">
                 {results.map((r) => (
@@ -329,6 +330,7 @@ function FilterSidebar({ lang, dict, f }: { lang: Locale; dict: Dictionary; f: F
         {dict.home.treatments.items.map((x) => (
           <Option key={x.q} type="radio" name="treatment" value={x.q} checked={f.treatment === x.q}>{x.name}</Option>
         ))}
+        <p className="text-[11px] leading-relaxed text-muted">{t.treatmentHelp}</p>
       </Group>
       <Group title={t.groups.rating}>
         <Option type="radio" name="rating" value="0" checked={!f.rating}>{t.any}</Option>

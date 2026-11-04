@@ -241,7 +241,9 @@
       "label": "分页",
       "prev": "上一页",
       "next": "下一页"
-    }
+    },
+    "treatmentHelp": "激光美白、补水护理、色素咨询以评价中填写的项目为准;常规皮肤诊疗显示标注皮肤科的医疗机构。",
+    "emptyTreatment": "目前还没有评价提到该项目。评价增多后结果会随之增加。请取消筛选,或按地区、诊所名称搜索。"
   },
   "login": {
     "eyebrow": "A MORE FAMILIAR WAY TO FIND CARE",

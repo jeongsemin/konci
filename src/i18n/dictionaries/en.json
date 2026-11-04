@@ -241,7 +241,9 @@
       "label": "Pagination",
       "prev": "Previous page",
       "next": "Next page"
-    }
+    },
+    "treatmentHelp": "Laser toning, hydration care and pigmentation consult use the treatment named in reviews; general skin care shows clinics that list dermatology.",
+    "emptyTreatment": "No reviews mention this treatment yet. Results grow as reviews are added. Try removing the filter, or search by area or clinic name."
   },
   "login": {
     "eyebrow": "A MORE FAMILIAR WAY TO FIND CARE",
