@@ -1,6 +1,16 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { NOTE_MAX, isSameValue, normalizeEnglishName, normalizePhone, parseEditInput } from "../src/lib/edit-request.ts";
+import {
+  NOTE_MAX,
+  fieldsFor,
+  isSameValue,
+  normalizeChineseName,
+  normalizeEnglishName,
+  normalizeHoursNote,
+  normalizeJapaneseName,
+  normalizePhone,
+  parseEditInput,
+} from "../src/lib/edit-request.ts";
 
 const ID = "11111111-2222-4333-8444-555555555555";
 const form = (o: Record<string, string>) => (k: string) => o[k] ?? null;
@@ -37,6 +47,60 @@ describe("normalizeEnglishName", () => {
       assert.equal(normalizeEnglishName(bad), null, bad);
     }
     assert.equal(normalizeEnglishName("x".repeat(80))?.length, 80);
+  });
+});
+
+describe("normalizeJapaneseName and normalizeChineseName", () => {
+  it("accept a name in the right script and tidy the spacing", () => {
+    assert.equal(normalizeJapaneseName("  アビジュ  クリニック "), "アビジュ クリニック");
+    assert.equal(normalizeJapaneseName("江南皮膚科"), "江南皮膚科");
+    assert.equal(normalizeJapaneseName("Abijou アビジュ"), "Abijou アビジュ");
+    assert.equal(normalizeChineseName("阿比朱皮肤科"), "阿比朱皮肤科");
+    assert.equal(normalizeChineseName("江南 Abijou 诊所"), "江南 Abijou 诊所");
+  });
+  it("reject Korean, Latin-only, kana in a Chinese name, markup, and overlong text", () => {
+    for (const bad of ["", "   ", "아비쥬", "Abijou", "1234", "<b>江南</b>", "江".repeat(61)]) {
+      assert.equal(normalizeJapaneseName(bad), null, `ja: ${bad}`);
+      assert.equal(normalizeChineseName(bad), null, `zh: ${bad}`);
+    }
+    assert.equal(normalizeChineseName("アビジュクリニック"), null);
+    assert.equal(normalizeJapaneseName("江".repeat(60))?.length, 60);
+  });
+});
+
+describe("normalizeHoursNote", () => {
+  it("keeps a short plain-text note, turning line breaks into spaces", () => {
+    assert.equal(normalizeHoursNote("평일 10:00~19:00\n토 10:00~16:00 / 일 휴진"), "평일 10:00~19:00 토 10:00~16:00 / 일 휴진");
+    assert.equal(normalizeHoursNote("Mon-Fri 10:00-19:00, closed Sunday"), "Mon-Fri 10:00-19:00, closed Sunday");
+  });
+  it("refuses markup, control characters, empty or symbol-only text and anything over 200 characters", () => {
+    for (const bad of ["", "   ", "<script>alert(1)</script>", "a > b", "ok\u0000", "----", "가".repeat(201)]) {
+      assert.equal(normalizeHoursNote(bad), null, bad);
+    }
+    assert.equal(normalizeHoursNote("가".repeat(200))?.length, 200);
+  });
+});
+
+describe("fieldsFor", () => {
+  it("offers a manager the extra fields, with 'other' last", () => {
+    assert.deepEqual(fieldsFor(false), ["phone", "homepage", "name_en", "other"]);
+    assert.deepEqual(fieldsFor(true), ["phone", "homepage", "name_en", "name_ja", "name_zh", "hours_note", "other"]);
+  });
+});
+
+describe("parseEditInput for managers", () => {
+  it("refuses the manager-only fields unless they are allowed", () => {
+    const f = form({ hospitalId: ID, field: "name_ja", value: "アビジュ" });
+    assert.equal(parseEditInput(f), null);
+    assert.equal(parseEditInput(f, fieldsFor(false)), null);
+    assert.deepEqual(parseEditInput(f, fieldsFor(true)), { hospitalId: ID, field: "name_ja", value: "アビジュ", note: null });
+  });
+  it("validates each manager field the same way, and still refuses an unknown one", () => {
+    const all = fieldsFor(true);
+    assert.equal(parseEditInput(form({ hospitalId: ID, field: "name_zh", value: "아비쥬" }), all), null);
+    assert.equal(parseEditInput(form({ hospitalId: ID, field: "hours_note", value: "<b>x</b>" }), all), null);
+    assert.equal(parseEditInput(form({ hospitalId: ID, field: "hours_note", value: "Mon-Sat 10-19" }), all)?.value, "Mon-Sat 10-19");
+    assert.equal(parseEditInput(form({ hospitalId: ID, field: "name", value: "x" }), all), null);
   });
 });
 
