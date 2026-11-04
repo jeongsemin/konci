@@ -125,6 +125,11 @@ export function toRow(item: HiraItem): HiraRow | null {
   };
 }
 
+/** The row without the columns an administrator has edited by hand, so a re-import leaves them alone. */
+export function withoutLocked<T extends object>(row: T, locked: readonly string[]): Partial<T> {
+  return Object.fromEntries(Object.entries(row).filter(([column]) => !locked.includes(column))) as Partial<T>;
+}
+
 /** Number of 피부과 specialists from a getDgsbjtInfo response, 0 when it lists no 피부과. */
 export function dermSpecialists(departments: { dgsbjtCd?: string | number; dgsbjtPrSdrCnt?: string | number }[]): number {
   const derm = departments.find((d) => String(d.dgsbjtCd) === DERM_CODE);

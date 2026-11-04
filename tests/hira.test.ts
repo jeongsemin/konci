@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { HiraError, buildUrl, dermSpecialists, parseResponse, toDate, toHomepage, toRow } from "../src/lib/hira.ts";
+import { HiraError, buildUrl, dermSpecialists, parseResponse, toDate, toHomepage, toRow, withoutLocked } from "../src/lib/hira.ts";
 
 const ok = (body: Record<string, unknown>) => ({ response: { header: { resultCode: "00", resultMsg: "NORMAL SERVICE." }, body } });
 const item = {
@@ -117,6 +117,19 @@ describe("dermSpecialists", () => {
     assert.equal(dermSpecialists([]), 0);
     assert.equal(dermSpecialists([{ dgsbjtCd: 1, dgsbjtPrSdrCnt: 3 }]), 0);
     assert.equal(dermSpecialists([{ dgsbjtCd: 14 }]), 0);
+  });
+});
+
+describe("withoutLocked", () => {
+  it("drops only the locked columns and leaves the row itself untouched", () => {
+    const row = { name: "A의원", phone: "02-1", homepage: "http://a.kr/" };
+    assert.deepEqual(withoutLocked(row, ["phone"]), { name: "A의원", homepage: "http://a.kr/" });
+    assert.deepEqual(withoutLocked(row, ["phone", "homepage"]), { name: "A의원" });
+    assert.deepEqual(row, { name: "A의원", phone: "02-1", homepage: "http://a.kr/" });
+  });
+  it("ignores locks on columns the row does not have, and with no locks changes nothing", () => {
+    assert.deepEqual(withoutLocked({ name: "A" }, ["name_en"]), { name: "A" });
+    assert.deepEqual(withoutLocked({ name: "A" }, []), { name: "A" });
   });
 });
 

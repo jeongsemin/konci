@@ -17,6 +17,7 @@ import {
   dermSpecialists,
   parseResponse,
   toRow,
+  withoutLocked,
   type HiraItem,
   type HiraRow,
 } from "../src/lib/hira.ts";
@@ -91,13 +92,40 @@ const supabase = dryRun
   ? null
   : createClient(need("NEXT_PUBLIC_SUPABASE_URL"), need("SUPABASE_SERVICE_ROLE_KEY"), { auth: { persistSession: false } });
 
+/** Hospitals with columns an administrator edited by hand (an approved edit request), by HIRA id. */
+async function loadLocked(): Promise<Map<string, string[]>> {
+  const locked = new Map<string, string[]>();
+  if (!supabase) return locked;
+  const { data, error } = await supabase.from("hospitals").select("hira_id, locked_fields").not("locked_fields", "eq", "{}");
+  // 42703: the column doesn't exist yet (migration 0006 not applied), so nothing can be locked.
+  if (error) {
+    if (error.code === "42703") return locked;
+    throw new Error(`Could not read the locked fields: ${error.message}`);
+  }
+  for (const h of data ?? []) locked.set(h.hira_id as string, h.locked_fields as string[]);
+  return locked;
+}
+
 async function save(rows: (HiraRow & { derm_listed?: boolean })[], syncedAt: string) {
   if (!supabase) return;
-  for (let i = 0; i < rows.length; i += UPSERT_BATCH) {
-    const batch = rows.slice(i, i + UPSERT_BATCH).map((r) => ({ ...r, synced_at: syncedAt }));
+  const locked = await loadLocked();
+  const plain = rows.filter((r) => !locked.has(r.hira_id));
+  for (let i = 0; i < plain.length; i += UPSERT_BATCH) {
+    const batch = plain.slice(i, i + UPSERT_BATCH).map((r) => ({ ...r, synced_at: syncedAt }));
     const { error } = await supabase.from("hospitals").upsert(batch, { onConflict: "external_id" });
     if (error) throw new Error(`Database write failed: ${error.message}`);
   }
+  // A bulk upsert can't leave single columns out of single rows, so the few edited hospitals are updated one by one.
+  let kept = 0;
+  for (const r of rows.filter((r) => locked.has(r.hira_id))) {
+    const { error } = await supabase
+      .from("hospitals")
+      .update({ ...withoutLocked(r, locked.get(r.hira_id)!), synced_at: syncedAt })
+      .eq("hira_id", r.hira_id);
+    if (error) throw new Error(`Database write failed: ${error.message}`);
+    kept++;
+  }
+  if (kept > 0) console.log(`  ${kept} hospital(s) have hand-edited fields that were left as they are`);
 }
 
 async function importList(scope: "derm" | "all") {
