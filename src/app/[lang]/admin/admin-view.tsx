@@ -46,6 +46,7 @@ export function AdminView({
   currentId,
   openReports,
   openEdits,
+  pendingManagers,
 }: {
   lang: Locale;
   dict: Dictionary;
@@ -56,6 +57,7 @@ export function AdminView({
   currentId: string;
   openReports: number;
   openEdits: number;
+  pendingManagers: number;
 }) {
   const t = dict.admin;
   const stats = [
@@ -122,6 +124,24 @@ export function AdminView({
             className="flex min-h-12 items-center justify-center rounded-sm bg-brand px-5 py-3 text-sm font-bold text-white hover:bg-brand-strong"
           >
             {t.editsLink.open}
+          </Link>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-md border border-border bg-card p-5">
+          <div className="space-y-1">
+            <p className="flex flex-wrap items-center gap-2 text-[15px] font-bold">
+              {t.managersLink.title}
+              {pendingManagers > 0 && (
+                <span className="rounded-full bg-star-soft px-2.5 py-0.5 text-[11px] text-star">{t.managersLink.count.replace("{n}", String(pendingManagers))}</span>
+              )}
+            </p>
+            <p className="text-xs text-muted">{t.managersLink.body}</p>
+          </div>
+          <Link
+            href={`/${lang}/admin/managers`}
+            className="flex min-h-12 items-center justify-center rounded-sm bg-brand px-5 py-3 text-sm font-bold text-white hover:bg-brand-strong"
+          >
+            {t.managersLink.open}
           </Link>
         </div>
 

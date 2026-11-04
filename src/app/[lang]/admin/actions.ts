@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { hasLocale } from "@/i18n/config";
 import { checkRoleChange, parseEmail, type RoleError } from "@/lib/admin-roles";
 import { getProfile } from "@/lib/auth";
+import { hasRoomForManager } from "@/lib/manager-input";
 import { pickSuspendTargets } from "@/lib/member-filters";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -166,6 +167,78 @@ export async function decideEdit(form: FormData) {
   const lang = hasLocale(String(form.get("lang") ?? "")) ? String(form.get("lang")) : "en";
   revalidatePath(`/${lang}/admin/edits`);
   revalidatePath(`/${lang}/hospitals/${request.hospital_id}`);
+}
+
+/**
+ * Decides a hospital-manager application after looking at the proof. A hospital has at most
+ * MAX_MANAGERS active managers; approving past that does nothing (the page disables the button).
+ */
+export async function decideManager(form: FormData) {
+  const profile = await getProfile();
+  if (!profile?.is_admin) throw new Error("forbidden");
+
+  const managerId = String(form.get("managerId") ?? "");
+  const decision = form.get("decision");
+  if (!UUID.test(managerId)) throw new Error("invalid application");
+  if (decision !== "approve" && decision !== "reject") throw new Error("invalid decision");
+  const reason = String(form.get("reason") ?? "").replace(/\s+/g, " ").trim().slice(0, 200);
+
+  const admin = createAdminClient();
+  const { data: application } = await admin.from("hospital_managers").select("id, hospital_id, status").eq("id", managerId).maybeSingle();
+  if (!application || application.status !== "pending") return;
+
+  if (decision === "approve") {
+    const { count } = await admin
+      .from("hospital_managers")
+      .select("id", { count: "exact", head: true })
+      .eq("hospital_id", application.hospital_id)
+      .eq("status", "active");
+    if (!hasRoomForManager(count ?? 0)) return;
+  }
+
+  // Only a still-pending application is decided, so two administrators can't overwrite each other.
+  const { error } = await admin
+    .from("hospital_managers")
+    .update({
+      status: decision === "approve" ? "active" : "rejected",
+      reject_reason: decision === "reject" ? reason || null : null,
+      decided_by: profile.id,
+      decided_at: new Date().toISOString(),
+    })
+    .eq("id", managerId)
+    .eq("status", "pending");
+  if (error) throw new Error("update failed");
+
+  const lang = hasLocale(String(form.get("lang") ?? "")) ? String(form.get("lang")) : "en";
+  revalidatePath(`/${lang}/admin/managers`);
+  revalidatePath(`/${lang}/hospitals/${application.hospital_id}/manage`);
+  revalidatePath(`/${lang}/hospitals/${application.hospital_id}/edit`);
+}
+
+/** Ends a manager's assignment. Edit requests they already sent stay in the queue. */
+export async function revokeManager(form: FormData) {
+  const profile = await getProfile();
+  if (!profile?.is_admin) throw new Error("forbidden");
+
+  const managerId = String(form.get("managerId") ?? "");
+  if (!UUID.test(managerId)) throw new Error("invalid manager");
+  const reason = String(form.get("reason") ?? "").replace(/\s+/g, " ").trim().slice(0, 200);
+
+  const admin = createAdminClient();
+  const { data: application } = await admin.from("hospital_managers").select("hospital_id").eq("id", managerId).maybeSingle();
+  const { error } = await admin
+    .from("hospital_managers")
+    .update({ status: "revoked", reject_reason: reason || null, decided_by: profile.id, decided_at: new Date().toISOString() })
+    .eq("id", managerId)
+    .eq("status", "active");
+  if (error) throw new Error("revoke failed");
+
+  const lang = hasLocale(String(form.get("lang") ?? "")) ? String(form.get("lang")) : "en";
+  revalidatePath(`/${lang}/admin/managers`);
+  if (application) {
+    revalidatePath(`/${lang}/hospitals/${application.hospital_id}/manage`);
+    revalidatePath(`/${lang}/hospitals/${application.hospital_id}/edit`);
+  }
 }
 
 export type GrantState = { ok?: true; error?: RoleError | "invalidEmail" | "notFound" | "forbidden" | "generic" } | null;

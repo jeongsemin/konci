@@ -22,7 +22,7 @@ export default async function MyPage({ params }: PageProps<"/[lang]/my">) {
   const dict = await getDictionary(lang);
   const supabase = await createClient();
 
-  const [{ data: auth }, { data: receipts }, { data: reviews }, { data: details }, { data: suspension }, { data: editRequests }] = await Promise.all([
+  const [{ data: auth }, { data: receipts }, { data: reviews }, { data: details }, { data: suspension }, { data: editRequests }, { data: managerApps }] = await Promise.all([
     supabase.auth.getUser(),
     supabase
       .from("receipts")
@@ -44,6 +44,13 @@ export default async function MyPage({ params }: PageProps<"/[lang]/my">) {
       .eq("requester_id", profile.id)
       .order("created_at", { ascending: false })
       .limit(20),
+    // Same for hospital-manager applications (migration 0007).
+    supabase
+      .from("hospital_managers")
+      .select("id, position, status, reject_reason, created_at, hospitals(id, name)")
+      .eq("user_id", profile.id)
+      .order("created_at", { ascending: false })
+      .limit(20),
   ]);
 
   const regionNames = new Intl.DisplayNames(lang, { type: "region" });
@@ -60,6 +67,7 @@ export default async function MyPage({ params }: PageProps<"/[lang]/my">) {
       receipts={receipts ?? []}
       reviews={reviews ?? []}
       editRequests={editRequests ?? []}
+      managerApps={managerApps ?? []}
       countries={countries}
       details={details ?? { country: null, age_group: null, gender: null }}
       suspension={suspension ? { reason: suspension.reason } : null}

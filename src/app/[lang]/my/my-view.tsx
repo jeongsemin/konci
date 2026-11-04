@@ -37,6 +37,15 @@ export type MyEditRequest = {
   hospitals: unknown;
 };
 
+export type MyManagerApp = {
+  id: string;
+  position: string;
+  status: string;
+  reject_reason: string | null;
+  created_at: string;
+  hospitals: unknown;
+};
+
 const fill = (template: string, values: Record<string, string | number>) =>
   template.replace(/\{(\w+)\}/g, (_, key) => String(values[key] ?? ""));
 
@@ -58,6 +67,7 @@ export function MyView({
   receipts,
   reviews,
   editRequests,
+  managerApps,
   countries,
   details,
   suspension,
@@ -69,6 +79,7 @@ export function MyView({
   receipts: MyReceipt[];
   reviews: MyReview[];
   editRequests: MyEditRequest[];
+  managerApps: MyManagerApp[];
   countries: { code: string; name: string }[];
   details: { country: string | null; age_group: string | null; gender: string | null };
   suspension: { reason: string | null } | null;
@@ -101,6 +112,7 @@ export function MyView({
             <a href="#receipts" className={navLink}>{fill(t.nav.receipts, { n: receipts?.length ?? 0 })}</a>
             <a href="#reviews" className={navLink}>{fill(t.nav.reviews, { n: reviews?.length ?? 0 })}</a>
             <a href="#edits" className={navLink}>{fill(dict.edit.myNav, { n: editRequests.length })}</a>
+            <a href="#managing" className={navLink}>{fill(dict.manager.myNav, { n: managerApps.length })}</a>
             <a href="#account" className={navLink}>{t.nav.account}</a>
             <a href="#language" className={navLink}>{t.nav.language}</a>
             <form action="/auth/logout" method="post">
@@ -260,6 +272,44 @@ export function MyView({
                         {/* A free-text report has no value to apply, so approving it means "handled". */}
                         {r.field === "other" && r.status === "approved" ? dict.edit.status.handled : dict.edit.status[r.status as keyof typeof dict.edit.status]}
                       </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </section>
+
+          {/* Hospitals I manage or have applied to manage */}
+          <section id="managing" className="scroll-mt-6 space-y-5">
+            <h2 className="text-2xl font-bold leading-snug md:text-[28px]">{dict.manager.myTitle}</h2>
+            {managerApps.length === 0 ? (
+              <p className="text-sm text-muted">{dict.manager.myEmpty}</p>
+            ) : (
+              <ul className="divide-y divide-border rounded-md border border-border bg-card">
+                {managerApps.map((m) => {
+                  const hospital = m.hospitals as unknown as { id: string; name: string } | null;
+                  const style = m.status === "active" ? "bg-brand-soft text-brand" : m.status === "pending" ? "bg-star-soft text-star" : "bg-error-soft text-error";
+                  return (
+                    <li key={m.id} className="flex flex-wrap items-start justify-between gap-3 p-4 text-sm">
+                      <div className="min-w-0 space-y-0.5">
+                        <p className="font-bold">
+                          {hospital ? (
+                            <Link href={`/${lang}/hospitals/${hospital.id}${m.status === "active" ? "/edit" : "/manage"}`} className="hover:text-brand">
+                              {hospital.name}
+                            </Link>
+                          ) : (
+                            "—"
+                          )}
+                        </p>
+                        <p className="text-xs text-muted">{m.position}</p>
+                        <p className="text-[11px] text-muted">{new Date(m.created_at).toLocaleDateString(lang)}</p>
+                        {(m.status === "rejected" || m.status === "revoked") && m.reject_reason && (
+                          <p className="text-xs text-error">
+                            {dict.manager.reason}: {m.reject_reason}
+                          </p>
+                        )}
+                      </div>
+                      <span className={`rounded-full px-3 py-1 text-xs font-bold ${style}`}>{dict.manager.status[m.status as keyof typeof dict.manager.status]}</span>
                     </li>
                   );
                 })}
