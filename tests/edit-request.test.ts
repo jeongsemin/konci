@@ -82,9 +82,41 @@ describe("normalizeHoursNote", () => {
 });
 
 describe("fieldsFor", () => {
-  it("offers a manager the extra fields, with 'other' last", () => {
-    assert.deepEqual(fieldsFor(false), ["phone", "homepage", "name_en", "other"]);
-    assert.deepEqual(fieldsFor(true), ["phone", "homepage", "name_en", "name_ja", "name_zh", "hours_note", "other"]);
+  it("offers a manager the extra fields, with the closure report and 'other' last", () => {
+    assert.deepEqual(fieldsFor(false), ["phone", "homepage", "name_en", "closure", "other"]);
+    assert.deepEqual(fieldsFor(true), ["phone", "homepage", "name_en", "name_ja", "name_zh", "hours_note", "closure", "other"]);
+  });
+});
+
+describe("closure reports", () => {
+  it("accept 'closed' or 'moved' as the value", () => {
+    assert.deepEqual(parseEditInput(form({ hospitalId: ID, field: "closure", value: "closed" })), {
+      hospitalId: ID,
+      field: "closure",
+      value: "closed",
+      note: null,
+    });
+    assert.equal(parseEditInput(form({ hospitalId: ID, field: "closure", value: " CLOSED " }))?.value, "closed");
+    assert.equal(parseEditInput(form({ hospitalId: ID, field: "closure", value: "closed", note: "closed in March" }))?.note, "closed in March");
+  });
+  it("need the new address for a move", () => {
+    assert.equal(parseEditInput(form({ hospitalId: ID, field: "closure", value: "moved" })), null);
+    assert.equal(parseEditInput(form({ hospitalId: ID, field: "closure", value: "moved", note: "   " })), null);
+    assert.deepEqual(parseEditInput(form({ hospitalId: ID, field: "closure", value: "moved", note: "서울 강남구 테헤란로 1" })), {
+      hospitalId: ID,
+      field: "closure",
+      value: "moved",
+      note: "서울 강남구 테헤란로 1",
+    });
+  });
+  it("refuse any other value, and are open to every member", () => {
+    for (const bad of ["", "open", "closed;drop", "폐업", "true"]) {
+      assert.equal(parseEditInput(form({ hospitalId: ID, field: "closure", value: bad })), null, bad);
+    }
+    assert.ok(parseEditInput(form({ hospitalId: ID, field: "closure", value: "closed" }), fieldsFor(false)));
+    assert.equal(isSameValue("closure", "closed", "closed"), true);
+    assert.equal(isSameValue("closure", "closed", "moved"), false);
+    assert.equal(isSameValue("closure", "closed", null), false);
   });
 });
 

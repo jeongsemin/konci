@@ -2,7 +2,7 @@
 import { toHomepage } from "./hira.ts";
 
 /** What any signed-in member may ask for. */
-export const MEMBER_FIELDS = ["phone", "homepage", "name_en", "other"] as const;
+export const MEMBER_FIELDS = ["phone", "homepage", "name_en", "closure", "other"] as const;
 /** What only the hospital's own manager may ask for. */
 export const MANAGER_FIELDS = ["name_ja", "name_zh", "hours_note"] as const;
 export const EDIT_FIELDS = [...MEMBER_FIELDS, ...MANAGER_FIELDS] as const;
@@ -11,9 +11,14 @@ export type EditField = (typeof EDIT_FIELDS)[number];
 /** The fields offered on the form, in the order shown ("other" last). */
 export function fieldsFor(isManager: boolean): EditField[] {
   return isManager
-    ? ["phone", "homepage", "name_en", "name_ja", "name_zh", "hours_note", "other"]
-    : ["phone", "homepage", "name_en", "other"];
+    ? ["phone", "homepage", "name_en", "name_ja", "name_zh", "hours_note", "closure", "other"]
+    : ["phone", "homepage", "name_en", "closure", "other"];
 }
+
+/** A closure report says the clinic has closed, or moved (the note then gives the new address). */
+export const CLOSURE_VALUES = ["closed", "moved"] as const;
+export type ClosureValue = (typeof CLOSURE_VALUES)[number];
+export const isClosureValue = (v: unknown): v is ClosureValue => (CLOSURE_VALUES as readonly unknown[]).includes(v);
 
 export const NOTE_MAX = 300;
 export const NAME_EN_MAX = 80;
@@ -91,7 +96,9 @@ export function normalizeHoursNote(raw: string): string | null {
   return /[\p{L}\p{N}]/u.test(note) ? note : null;
 }
 
-type ValueField = Exclude<EditField, "other">;
+export type ValueField = Exclude<EditField, "other">;
+/** The fields that take typed text (a closure report picks one of two values instead). */
+export type TextField = Exclude<ValueField, "closure">;
 
 /** The value in the form we store it, or null when it is not acceptable for that field. */
 export function normalizeValue(field: ValueField, raw: string): string | null {
@@ -108,6 +115,10 @@ export function normalizeValue(field: ValueField, raw: string): string | null {
       return normalizeChineseName(raw);
     case "hours_note":
       return normalizeHoursNote(raw);
+    case "closure": {
+      const choice = raw.trim().toLowerCase();
+      return isClosureValue(choice) ? choice : null;
+    }
   }
 }
 
@@ -137,5 +148,8 @@ export function parseEditInput(get: (key: string) => string | null, allowed: rea
   if (field === "other") return note === "" ? null : { hospitalId, field, value: null, note };
 
   const value = normalizeValue(field, get("value") ?? "");
-  return value === null ? null : { hospitalId, field, value, note: note || null };
+  if (value === null) return null;
+  // A clinic that moved needs its new address, so the move can be checked.
+  if (field === "closure" && value === "moved" && note === "") return null;
+  return { hospitalId, field, value, note: note || null };
 }
