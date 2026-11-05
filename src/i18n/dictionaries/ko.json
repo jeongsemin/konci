@@ -9,7 +9,8 @@
     "admin": "관리자",
     "login": "로그인",
     "logout": "로그아웃",
-    "find": "병원 찾기"
+    "find": "병원 찾기",
+    "feedback": "건의사항"
   },
   "home": {
     "eyebrow": "YOUR CARE, YOUR WAY IN KOREA",
@@ -763,6 +764,12 @@
         "revoked": "해제"
       },
       "note": "승인한 관리자는 자기 병원에 한해 더 많은 항목을 수정 요청할 수 있어요. 요청은 계속 수정 요청 큐에서 검토하며 '병원 관리자 요청' 배지가 붙어요. 해제해도 이미 보낸 요청은 큐에 남아요."
+    },
+    "feedbackLink": {
+      "title": "건의사항",
+      "body": "사용자가 남긴 건의에 답변하고 처리 상태를 바꿉니다. 작성자와 관리자만 볼 수 있어요.",
+      "open": "건의사항 보기",
+      "count": "{n}건 대기"
     }
   },
   "common": {
@@ -1000,5 +1007,56 @@
       "에 따라 처리하는 데 동의합니다."
     ],
     "consentRequired": "영수증 처리에 먼저 동의해 주세요."
+  },
+  "feedback": {
+    "title": "건의사항",
+    "subtitle": "불편한 점이나 바라는 점을 남겨주세요. 운영자만 볼 수 있고, 확인하는 대로 답변해 드립니다. 답변은 이 화면에서 확인할 수 있어요.",
+    "empty": "아직 남긴 건의가 없어요.",
+    "filterAll": "전체",
+    "categories": {
+      "bug": "오류",
+      "inconvenience": "불편한 점",
+      "idea": "제안",
+      "other": "기타"
+    },
+    "statuses": {
+      "open": "접수됨",
+      "reviewing": "검토 중",
+      "done": "반영됨",
+      "declined": "보류"
+    },
+    "reply": "운영팀 답변",
+    "mine": "내 글",
+    "delete": "삭제",
+    "deleteConfirm": "이 글을 삭제할까요? 되돌릴 수 없어요.",
+    "loginPrompt": "건의를 남기려면 로그인이 필요해요.",
+    "loginButton": "로그인하고 쓰기",
+    "publicNote": "글은 운영자와 나만 볼 수 있어요. 그래도 개인정보나 영수증 내용은 적지 마세요.",
+    "form": {
+      "open": "건의 쓰기",
+      "category": "종류",
+      "title": "제목",
+      "titlePlaceholder": "한 줄로 요약해 주세요",
+      "body": "내용",
+      "bodyPlaceholder": "어떤 화면에서, 무엇이 불편했는지 알려주세요.",
+      "bodyHelp": "최대 1000자. 하루에 5개까지 쓸 수 있어요.",
+      "submit": "등록",
+      "submitting": "등록하는 중…",
+      "done": "등록했어요. 의견 감사합니다!",
+      "errors": {
+        "invalid": "종류, 제목, 내용을 확인해 주세요. (제목 80자, 내용 1000자까지)",
+        "suspended": "이용이 정지된 계정은 글을 쓸 수 없어요.",
+        "limit": "오늘은 더 쓸 수 없어요. 내일 다시 남겨주세요.",
+        "notLoggedIn": "먼저 로그인해 주세요.",
+        "generic": "문제가 생겼어요. 잠시 후 다시 시도해 주세요."
+      }
+    },
+    "admin": {
+      "status": "상태",
+      "reply": "답변",
+      "replyPlaceholder": "작성자에게만 보입니다 (비워두면 답변 없음)",
+      "save": "저장"
+    },
+    "emptyAdmin": "아직 접수된 건의가 없어요."
   }
 }

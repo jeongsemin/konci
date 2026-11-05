@@ -9,7 +9,8 @@
     "admin": "管理",
     "login": "登录",
     "logout": "退出登录",
-    "find": "查找诊所"
+    "find": "查找诊所",
+    "feedback": "建议"
   },
   "home": {
     "eyebrow": "YOUR CARE, YOUR WAY IN KOREA",
@@ -763,6 +764,12 @@
         "revoked": "已解除"
       },
       "note": "获批的管理员只能为自己的诊所申请修改更多项目。申请仍在修改申请队列中审核,并带有“诊所管理员申请”标记。解除后,已提交的申请仍保留在队列中。"
+    },
+    "feedbackLink": {
+      "title": "建议留言板",
+      "body": "回复会员的建议并更新处理状态。仅作者和管理员可见。",
+      "open": "打开留言板",
+      "count": "{n}条待处理"
     }
   },
   "common": {
@@ -1000,5 +1007,56 @@
       "处理。"
     ],
     "consentRequired": "请先同意收据处理。"
+  },
+  "feedback": {
+    "title": "建议留言板",
+    "subtitle": "请告诉我们不方便的地方或希望改进的内容。只有运营团队能看到,回复会显示在此页面。",
+    "empty": "您还没有提交过建议。",
+    "filterAll": "全部",
+    "categories": {
+      "bug": "故障",
+      "inconvenience": "不便之处",
+      "idea": "建议",
+      "other": "其他"
+    },
+    "statuses": {
+      "open": "已收到",
+      "reviewing": "审核中",
+      "done": "已处理",
+      "declined": "暂缓"
+    },
+    "reply": "团队回复",
+    "mine": "我的留言",
+    "delete": "删除",
+    "deleteConfirm": "要删除这条留言吗?删除后无法恢复。",
+    "loginPrompt": "登录后才能提交建议。",
+    "loginButton": "登录后留言",
+    "publicNote": "留言只有您和运营团队可见。但请不要填写个人信息或收据内容。",
+    "form": {
+      "open": "写建议",
+      "category": "类型",
+      "title": "标题",
+      "titlePlaceholder": "请用一句话概括",
+      "body": "内容",
+      "bodyPlaceholder": "请告诉我们在哪个页面、哪里不好用。",
+      "bodyHelp": "最多1000字。每天最多发布5条。",
+      "submit": "发布",
+      "submitting": "发布中…",
+      "done": "已发布。感谢您的反馈!",
+      "errors": {
+        "invalid": "请检查类型、标题和内容(标题最多80字,内容最多1000字)。",
+        "suspended": "被停用的账号无法留言。",
+        "limit": "今天不能再发布了,请明天再试。",
+        "notLoggedIn": "请先登录。",
+        "generic": "出了点问题,请稍后再试。"
+      }
+    },
+    "admin": {
+      "status": "状态",
+      "reply": "回复",
+      "replyPlaceholder": "仅作者可见(留空表示不回复)",
+      "save": "保存"
+    },
+    "emptyAdmin": "还没有建议。"
   }
 }

@@ -47,6 +47,7 @@ export function AdminView({
   openReports,
   openEdits,
   pendingManagers,
+  openFeedback,
 }: {
   lang: Locale;
   dict: Dictionary;
@@ -58,6 +59,7 @@ export function AdminView({
   openReports: number;
   openEdits: number;
   pendingManagers: number;
+  openFeedback: number;
 }) {
   const t = dict.admin;
   const stats = [
@@ -142,6 +144,24 @@ export function AdminView({
             className="flex min-h-12 items-center justify-center rounded-sm bg-brand px-5 py-3 text-sm font-bold text-white hover:bg-brand-strong"
           >
             {t.managersLink.open}
+          </Link>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-md border border-border bg-card p-5">
+          <div className="space-y-1">
+            <p className="flex flex-wrap items-center gap-2 text-[15px] font-bold">
+              {t.feedbackLink.title}
+              {openFeedback > 0 && (
+                <span className="rounded-full bg-star-soft px-2.5 py-0.5 text-[11px] text-star">{t.feedbackLink.count.replace("{n}", String(openFeedback))}</span>
+              )}
+            </p>
+            <p className="text-xs text-muted">{t.feedbackLink.body}</p>
+          </div>
+          <Link
+            href={`/${lang}/feedback`}
+            className="flex min-h-12 items-center justify-center rounded-sm bg-brand px-5 py-3 text-sm font-bold text-white hover:bg-brand-strong"
+          >
+            {t.feedbackLink.open}
           </Link>
         </div>
 

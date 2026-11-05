@@ -9,7 +9,8 @@
     "admin": "Admin",
     "login": "Sign in",
     "logout": "Sign out",
-    "find": "Find clinics"
+    "find": "Find clinics",
+    "feedback": "Feedback"
   },
   "home": {
     "eyebrow": "YOUR CARE, YOUR WAY IN KOREA",
@@ -763,6 +764,12 @@
         "revoked": "Ended"
       },
       "note": "An approved manager can request more fields, for their own clinic only. Their requests are still reviewed in the correction queue, marked \"Clinic manager request\". Ending an assignment leaves the requests already sent in the queue."
+    },
+    "feedbackLink": {
+      "title": "Suggestions",
+      "body": "Answer members' suggestions and update their status. Only the author and administrators can see them.",
+      "open": "Open the board",
+      "count": "{n} waiting"
     }
   },
   "common": {
@@ -1000,5 +1007,56 @@
       "."
     ],
     "consentRequired": "Please agree to the receipt processing first."
+  },
+  "feedback": {
+    "title": "Suggestions",
+    "subtitle": "Tell us what is inconvenient or what you wish for. Only the team can read it, and we will answer here.",
+    "empty": "You haven't sent a suggestion yet.",
+    "filterAll": "All",
+    "categories": {
+      "bug": "Bug",
+      "inconvenience": "Inconvenience",
+      "idea": "Idea",
+      "other": "Other"
+    },
+    "statuses": {
+      "open": "Received",
+      "reviewing": "In review",
+      "done": "Done",
+      "declined": "On hold"
+    },
+    "reply": "Reply from the team",
+    "mine": "Yours",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this post? This can't be undone.",
+    "loginPrompt": "Sign in to send a suggestion.",
+    "loginButton": "Sign in to write",
+    "publicNote": "Only you and the team can see your post. Still, please don't include personal information or receipt details.",
+    "form": {
+      "open": "Write a suggestion",
+      "category": "Type",
+      "title": "Title",
+      "titlePlaceholder": "Sum it up in one line",
+      "body": "Details",
+      "bodyPlaceholder": "Which page, and what was hard to use?",
+      "bodyHelp": "Up to 1,000 characters. You can post 5 a day.",
+      "submit": "Post",
+      "submitting": "Posting…",
+      "done": "Posted. Thank you for telling us!",
+      "errors": {
+        "invalid": "Check the type, title and details (title up to 80, details up to 1,000 characters).",
+        "suspended": "A suspended account can't post.",
+        "limit": "You can't post more today. Please try again tomorrow.",
+        "notLoggedIn": "Please sign in first.",
+        "generic": "Something went wrong. Please try again."
+      }
+    },
+    "admin": {
+      "status": "Status",
+      "reply": "Reply",
+      "replyPlaceholder": "Shown only to the author (leave empty for no reply)",
+      "save": "Save"
+    },
+    "emptyAdmin": "No suggestions yet."
   }
 }

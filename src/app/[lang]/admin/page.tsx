@@ -90,6 +90,9 @@ export default async function AdminPage({ params }: PageProps<"/[lang]/admin">) 
   // And for hospital-manager applications (migration 0007).
   const { count: pendingManagers } = await admin.from("hospital_managers").select("id", { count: "exact", head: true }).eq("status", "pending");
 
+  // And for the suggestion board (migration 0011).
+  const { count: openFeedback } = await admin.from("feedback_posts").select("id", { count: "exact", head: true }).eq("status", "open");
+
   const { data: adminRows } = await admin
     .from("profiles")
     .select("id, display_name")
@@ -115,6 +118,7 @@ export default async function AdminPage({ params }: PageProps<"/[lang]/admin">) 
       openReports={openReports ?? 0}
       openEdits={openEdits ?? 0}
       pendingManagers={pendingManagers ?? 0}
+      openFeedback={openFeedback ?? 0}
     />
   );
 }

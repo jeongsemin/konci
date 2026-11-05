@@ -106,6 +106,8 @@ Supabase **SQL 편집기**에 `supabase/migrations/0001_init.sql`을 붙여넣�
 
 영수증 정리: `node --env-file=.env.local scripts/purge-receipts.ts [--dry-run]`은 후기가 없는 영수증을 30일 뒤 삭제합니다(심사 중인 영수증은 제외). 배포 후 정기 실행(스케줄러)에 등록해야 합니다.
 
+`supabase/migrations/0011_feedback.sql`은 건의사항 게시판(`/feedback`)의 DB입니다. 로그인한 회원이 글을 쓰고 **작성자와 관리자만** 읽을 수 있으며(`0012_feedback_private.sql`이 읽기 규칙을 비공개로 바꿉니다)(하루 5개, 정지된 계정 제외), 본인 글은 삭제할 수 있습니다. 답변과 처리 상태(접수됨·검토 중·반영됨·보류)는 관리자가 같은 화면에서 서버(서비스 키)로만 바꿉니다. 이 내용은 개인정보처리방침에도 적었습니다.
+
 ### 2-1. 병원 데이터 적재 (심평원)
 
 공공데이터포털에서 병원정보서비스(15001698)와 의료기관별상세정보서비스(15001699)를 활용 신청하고 키를 `.env.local`에 넣은 뒤 실행합니다.
@@ -210,7 +212,7 @@ tests/                 # node --test
 ## 테스트와 검증
 
 ```bash
-npm test        # 단위 테스트 (174개)
+npm test        # 단위 테스트 (178개)
 npm run lint
 npm run build
 ```

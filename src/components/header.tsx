@@ -21,6 +21,7 @@ export async function Header({ lang, dict }: { lang: Locale; dict: Dictionary })
 
   const links = [
     { href: `/${lang}#search`, label: dict.nav.find },
+    { href: `/${lang}/feedback`, label: dict.nav.feedback },
     ...(profile ? [{ href: `/${lang}/my`, label: dict.nav.my }] : []),
     ...(profile?.is_admin ? [{ href: `/${lang}/admin`, label: dict.nav.admin }] : []),
   ];
