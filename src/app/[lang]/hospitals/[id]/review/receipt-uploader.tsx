@@ -13,11 +13,16 @@ type Text = {
   status: Record<string, string>;
   errors: Record<string, string>;
   reasons: Record<string, string>;
+  /** Consent sentence split around the privacy-policy link: [before, after]. */
+  consent: string[];
+  consentRequired: string;
+  /** Link label of the privacy policy. */
+  privacy: string;
 };
 
 type Outcome = { kind: "ok" | "wait" | "error"; message: string; reasons?: string[] };
 
-export function ReceiptUploader({ hospitalId, text }: { hospitalId: string; text: Text }) {
+export function ReceiptUploader({ hospitalId, lang, text }: { hospitalId: string; lang: string; text: Text }) {
   const router = useRouter();
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
@@ -78,6 +83,22 @@ export function ReceiptUploader({ hospitalId, text }: { hospitalId: string; text
       )}
       <p className="text-[11px] text-muted">{text.receiptHelp}</p>
       <p className="text-[11px] text-muted">{text.receiptPrivacy}</p>
+      <label className="flex items-start gap-2 text-[12px] leading-relaxed">
+        <input
+          type="checkbox"
+          required
+          onInvalid={(e) => e.currentTarget.setCustomValidity(text.consentRequired)}
+          onChange={(e) => e.currentTarget.setCustomValidity("")}
+          className="mt-0.5 size-4 shrink-0 accent-brand"
+        />
+        <span>
+          {text.consent[0]}
+          <a href={`/${lang}/privacy`} target="_blank" rel="noreferrer" className="font-bold underline">
+            {text.privacy}
+          </a>
+          {text.consent[1]}
+        </span>
+      </label>
       <button
         disabled={busy}
         className="inline-flex min-h-12 items-center gap-2 rounded-sm border border-border bg-white px-5 py-3 text-sm font-bold text-brand hover:bg-brand-soft disabled:opacity-60"

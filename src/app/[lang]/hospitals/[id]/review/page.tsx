@@ -89,7 +89,15 @@ export default async function ReviewPage({ params }: PageProps<"/[lang]/hospital
 
           <ReceiptUploader
             hospitalId={id}
-            text={{ ...dict.review, errors: dict.errors, reasons: dict.reasons }}
+            lang={lang}
+            text={{
+              ...dict.review,
+              errors: dict.errors,
+              reasons: dict.reasons,
+              consent: dict.legal.receiptConsent,
+              consentRequired: dict.legal.consentRequired,
+              privacy: dict.legal.privacy,
+            }}
           />
           {waiting.length > 0 && (
             <ul className="space-y-1 text-xs text-muted">

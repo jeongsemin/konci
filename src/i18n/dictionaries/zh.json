@@ -263,8 +263,7 @@
     "title": "登录",
     "subtitle": "使用 Google 账号继续。首次使用将自动创建账号。",
     "google": "使用 Google 继续",
-    "failed": "登录失败，请稍后重试。",
-    "note": "我们仅使用你的姓名和头像。"
+    "failed": "登录失败，请稍后重试。"
   },
   "hospital": {
     "reviews": "评价",
@@ -964,5 +963,21 @@
     "myTitle": "我的诊所管理申请",
     "myNav": "诊所管理申请({n})",
     "myEmpty": "没有提交过申请。"
+  },
+  "legal": {
+    "terms": "服务条款",
+    "privacy": "隐私政策",
+    "effective": "生效日期",
+    "contactLabel": "联系方式",
+    "loginAgree": [
+      "继续即表示您同意",
+      "和",
+      "。"
+    ],
+    "receiptConsent": [
+      "我同意通过文字识别服务读取我的收据图片,并按照",
+      "处理。"
+    ],
+    "consentRequired": "请先同意收据处理。"
   }
 }

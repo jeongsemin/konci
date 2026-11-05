@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CircleAlert } from "lucide-react";
 import { hasLocale } from "@/i18n/config";
@@ -68,7 +69,17 @@ export default async function LoginPage({ params, searchParams }: PageProps<"/[l
         )}
 
         <GoogleButton lang={lang} next={next} label={t.google} />
-        <p className="text-[11px] text-muted">{t.note}</p>
+        <p className="text-[11px] leading-relaxed text-muted">
+          {dict.legal.loginAgree[0]}
+          <Link href={`/${lang}/terms`} className="font-bold underline">
+            {dict.legal.terms}
+          </Link>
+          {dict.legal.loginAgree[1]}
+          <Link href={`/${lang}/privacy`} className="font-bold underline">
+            {dict.legal.privacy}
+          </Link>
+          {dict.legal.loginAgree[2]}
+        </p>
       </section>
     </div>
   );

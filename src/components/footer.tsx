@@ -11,6 +11,14 @@ export function Footer({ lang, dict }: { lang: Locale; dict: Dictionary }) {
           medimate
         </Link>
         <p className="max-w-3xl text-xs leading-relaxed text-muted">{dict.footer.disclaimer}</p>
+        <p className="flex flex-wrap gap-x-4 gap-y-1 text-xs font-bold">
+          <Link href={`/${lang}/terms`} className="hover:text-brand">
+            {dict.legal.terms}
+          </Link>
+          <Link href={`/${lang}/privacy`} className="hover:text-brand">
+            {dict.legal.privacy}
+          </Link>
+        </p>
         <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted">
           <p>{dict.footer.meta}</p>
           <p className="flex gap-3">

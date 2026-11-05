@@ -75,6 +75,7 @@ npm run dev                  # http://localhost:3000
 | `NAVER_SEARCH_CLIENT_ID` / `NAVER_SEARCH_CLIENT_SECRET` | 선택 | 네이버 개발자센터 → 검색 API. 없으면 DB에 적재된 병원만 검색됩니다 |
 | `CLOVA_OCR_INVOKE_URL` / `CLOVA_OCR_SECRET` | 선택 | 없으면 모든 영수증이 수동 검토로 넘어갑니다 |
 | `NEXT_PUBLIC_SITE_URL` | 배포 시 | canonical·hreflang·사이트맵의 기준 주소. 기본값 `http://localhost:3000` |
+| `NEXT_PUBLIC_CONTACT_EMAIL` | 배포 시 | 이용약관·개인정보처리방침에 표시되는 문의·개인정보 보호책임자 연락처. 없으면 자리표시 주소(`contact@medimate.example`)가 보입니다 |
 
 `.env.local`은 git에서 제외됩니다. **키를 저장소에 커밋하지 마세요.**
 
@@ -205,7 +206,7 @@ tests/                 # node --test
 ## 테스트와 검증
 
 ```bash
-npm test        # 단위 테스트 (166개)
+npm test        # 단위 테스트 (169개)
 npm run lint
 npm run build
 ```
@@ -285,7 +286,8 @@ CLOVA 응답 샘플은 공식 문서의 구조를 따라 직접 만든 것이며
 - 시술 필터가 켜진 검색의 **속도**(병원 4만 곳 × 후기 집계: 지금은 후기가 없어 재 보지 않았고, 후기가 많아지면 확인이 필요합니다), 일반 회원 계정이 쓴 후기로의 확인(시험은 관리자 계정의 후기)
 - 후기가 없는 지금은 레이저 토닝·수분 관리·색소 상담 필터가 대부분 0건입니다. 후기가 쌓여야 의미 있는 결과가 나옵니다
 - 피부과 전문의 수 조회(`--details`)를 DB에 반영하는 경로. 강남구 표본 60곳을 읽기만 해서 확인했습니다
-- 배포 환경(실제 도메인의 OAuth 리다이렉트, `NEXT_PUBLIC_SITE_URL`)
+- 이용약관(`/terms`)·개인정보처리방침(`/privacy`)은 4개 언어 초안이며 **법률 검토를 받지 않았습니다**. 시행일은 `src/lib/legal/types.ts`의 `LEGAL_EFFECTIVE_DATE`이고, 호스팅 업체·국외 이전 항목은 배포 후 채워야 합니다. 보관 기간과 탈퇴(현재는 이메일 요청) 절차는 문서에 적은 대로 실제 운영해야 합니다
+- 배포 환경(실제 도메인의 OAuth 리다이렉트, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_CONTACT_EMAIL`)
 
 **알려진 한계**
 - 네이버 지역 검색 API는 한 번에 **최대 5곳**이고 페이지네이션이 없어서, 병원 목록은 심평원 공공데이터를 기준으로 하고 네이버는 보완으로만 씁니다. 네이버 응답을 DB에 저장해도 되는지 약관은 아직 확인하지 않았습니다

@@ -263,8 +263,7 @@
     "title": "Sign in",
     "subtitle": "Continue with Google. A new account is created automatically the first time.",
     "google": "Continue with Google",
-    "failed": "Sign-in failed. Please try again in a moment.",
-    "note": "We only use your name and profile photo."
+    "failed": "Sign-in failed. Please try again in a moment."
   },
   "hospital": {
     "reviews": "Reviews",
@@ -964,5 +963,21 @@
     "myTitle": "My clinic management applications",
     "myNav": "Clinic management ({n})",
     "myEmpty": "You have not applied for any clinic."
+  },
+  "legal": {
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "effective": "Effective",
+    "contactLabel": "Contact",
+    "loginAgree": [
+      "By continuing you agree to the ",
+      " and the ",
+      "."
+    ],
+    "receiptConsent": [
+      "I agree that my receipt image is read by a text-recognition service and handled as described in the ",
+      "."
+    ],
+    "consentRequired": "Please agree to the receipt processing first."
   }
 }
