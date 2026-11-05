@@ -64,6 +64,7 @@ export default async function MyPage({ params }: PageProps<"/[lang]/my">) {
       dict={dict}
       name={profile.display_name ?? ""}
       email={auth.user?.email ?? null}
+      isAdmin={profile.is_admin}
       receipts={receipts ?? []}
       reviews={reviews ?? []}
       editRequests={editRequests ?? []}

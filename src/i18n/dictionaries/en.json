@@ -435,7 +435,7 @@
       "public": "Public",
       "delete": "Delete",
       "deleting": "Deleting…",
-      "deleteConfirm": "Delete this review? This can't be undone.",
+      "deleteConfirm": "Delete this review? The receipt behind it is deleted too. This can't be undone.",
       "visit": "Visited {ym}",
       "note": "Receipt-verified · Personal experience, results may vary",
       "hidden": "Hidden"
@@ -488,6 +488,27 @@
       "saving": "Saving…",
       "saved": "Saved.",
       "error": "Please choose from the options."
+    },
+    "deleteAccount": {
+      "title": "Delete account",
+      "intro": "Leaving deletes everything tied to your account and cannot be undone:",
+      "items": [
+        "Your profile, nickname and details (country, age group, gender)",
+        "All your reviews",
+        "Your receipt photos and the text read from them",
+        "Your reports, correction requests and clinic manager applications, with their proof documents"
+      ],
+      "note": "Your Google account itself is not affected. To use MediMate again you will sign up from scratch.",
+      "admin": "Administrators can't delete their account. Ask another administrator to remove your role first.",
+      "confirm": "I understand that this cannot be undone.",
+      "button": "Delete my account",
+      "deleting": "Deleting…",
+      "dialog": "Delete your account and everything in it? This can't be undone.",
+      "errors": {
+        "admin": "Administrators can't delete their account. Ask another administrator to remove your role first.",
+        "notConfirmed": "Please tick the box to confirm.",
+        "generic": "Something went wrong, nothing was deleted. Please try again in a moment."
+      }
     }
   },
   "admin": {

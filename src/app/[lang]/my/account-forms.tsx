@@ -2,7 +2,15 @@
 
 import { startTransition, useActionState, type FormEvent } from "react";
 import { NICKNAME_MAX } from "@/lib/profile-input";
-import { deleteReview, updateMemberDetails, updateNickname, type DetailsState, type NicknameState } from "./actions";
+import {
+  deleteAccount,
+  deleteReview,
+  updateMemberDetails,
+  updateNickname,
+  type DeleteAccountState,
+  type DetailsState,
+  type NicknameState,
+} from "./actions";
 
 export function NicknameForm({
   lang,
@@ -189,6 +197,63 @@ export function DeleteReviewForm({
       <button className="flex min-h-12 items-center justify-center rounded-sm px-5 py-3 text-sm font-bold text-brand hover:bg-brand-soft">
         {label}
       </button>
+    </form>
+  );
+}
+
+type DeleteAccountText = {
+  title: string;
+  intro: string;
+  items: string[];
+  note: string;
+  admin: string;
+  confirm: string;
+  button: string;
+  deleting: string;
+  dialog: string;
+  errors: Record<string, string>;
+};
+
+export function DeleteAccountForm({ lang, isAdmin, text }: { lang: string; isAdmin: boolean; text: DeleteAccountText }) {
+  const [state, action, pending] = useActionState<DeleteAccountState, FormData>(deleteAccount, null);
+  const submit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!window.confirm(text.dialog)) return;
+    const data = new FormData(e.currentTarget);
+    startTransition(() => action(data));
+  };
+  return (
+    <form onSubmit={submit} className="space-y-4 border-t border-border pt-6">
+      <input type="hidden" name="lang" value={lang} />
+      <div className="space-y-2">
+        <p className="text-[15px] font-bold">{text.title}</p>
+        <p className="text-xs text-muted">{text.intro}</p>
+        <ul className="list-disc space-y-1 pl-5 text-xs text-muted">
+          {text.items.map((i) => (
+            <li key={i}>{i}</li>
+          ))}
+        </ul>
+        <p className="text-xs text-muted">{text.note}</p>
+      </div>
+      {isAdmin ? (
+        <p className="rounded-sm bg-surface p-3.5 text-xs text-muted">{text.admin}</p>
+      ) : (
+        <>
+          <label className="flex items-start gap-2 text-[13px]">
+            <input type="checkbox" name="confirm" value="yes" required className="mt-0.5 size-4 shrink-0 accent-error" />
+            <span>{text.confirm}</span>
+          </label>
+          <button
+            disabled={pending}
+            className="min-h-12 rounded-sm border border-error px-5 py-3 text-sm font-bold text-error hover:bg-error-soft disabled:opacity-60"
+          >
+            {pending ? text.deleting : text.button}
+          </button>
+          <p role="alert" className="text-xs text-error">
+            {state?.error ? (state.error === "admin" ? text.errors.admin : (text.errors[state.error] ?? text.errors.generic)) : ""}
+          </p>
+        </>
+      )}
     </form>
   );
 }

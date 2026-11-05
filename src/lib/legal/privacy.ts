@@ -52,7 +52,7 @@ const ko: LegalDoc = {
       ],
       items: [
         "회원 정보와 후기: 회원 탈퇴 또는 삭제 요청 시까지",
-        "영수증 이미지와 판독 결과: 해당 후기가 게시되어 있는 동안(같은 영수증의 재사용을 막기 위한 식별값은 부정 이용 방지를 위해 더 오래 보관할 수 있습니다)",
+        "영수증 이미지와 판독 결과: 해당 후기가 게시되어 있는 동안입니다. 후기를 삭제하면 함께 삭제되고, 후기를 쓰지 않은 영수증은 업로드 30일 뒤(심사 중이면 심사가 끝난 뒤) 삭제됩니다. 같은 영수증의 재사용을 막기 위한 식별값(해시)만 더 오래 보관하며, 이 값으로는 영수증 내용을 알 수 없습니다",
         "관리자 신청 증빙 서류: 심사가 끝나고 관리자 자격이 유지되는 동안, 자격이 끝나면 파기",
         "법령에 따라 보관해야 하는 정보(예: 통신사실확인자료 등 접속 기록 3개월 이상): 해당 법령이 정한 기간",
       ],
@@ -77,7 +77,7 @@ const ko: LegalDoc = {
     {
       heading: "8. 이용자의 권리",
       paragraphs: [
-        "이용자는 언제든지 자신의 개인정보를 열람·정정·삭제하거나 처리를 멈추도록 요구하고, 동의를 철회할 수 있습니다. 닉네임·국적·연령대·성별은 \"내 정보\" 화면에서 직접 고치고, 작성한 후기는 직접 삭제할 수 있습니다. 그 밖의 요청과 회원 탈퇴는 아래 연락처로 보내 주시면 지체 없이 처리합니다.",
+        "이용자는 언제든지 자신의 개인정보를 열람·정정·삭제하거나 처리를 멈추도록 요구하고, 동의를 철회할 수 있습니다. 닉네임·국적·연령대·성별은 \"내 정보\" 화면에서 직접 고치고, 작성한 후기는 직접 삭제할 수 있습니다. 회원 탈퇴는 \"내 정보\" 화면의 \"회원 탈퇴\"에서 직접 할 수 있으며, 탈퇴하면 후기·영수증·관리자 신청 서류를 포함한 모든 정보가 즉시 삭제됩니다. 그 밖의 요청은 아래 연락처로 보내 주시면 지체 없이 처리합니다.",
       ],
     },
     {
@@ -159,7 +159,7 @@ const en: LegalDoc = {
       paragraphs: ["We delete personal information without delay once its purpose is fulfilled. The following are kept for the periods shown."],
       items: [
         "Account details and reviews: until you leave or ask us to delete them",
-        "Receipt images and reading results: while the related review is published (an identifier used to stop the same receipt being reused may be kept longer to prevent misuse)",
+        "Receipt images and reading results: while the related review is published. They are deleted with the review, and receipts that never led to a review are deleted 30 days after upload (once the check is finished, if it was pending). Only a hash that stops the same receipt being reused is kept longer; it does not reveal what the receipt shows",
         "Manager proof documents: while the review is pending and the manager role lasts; deleted when the role ends",
         "Information we must keep by law (for example access logs for at least three months): for the period the law sets",
       ],
@@ -182,7 +182,7 @@ const en: LegalDoc = {
     {
       heading: "8. Your rights",
       paragraphs: [
-        "You can at any time ask to see, correct or delete your personal information, ask us to stop processing it, or withdraw your consent. You can edit your nickname, country, age group and gender on the \"My page\" screen and delete your own reviews yourself. For anything else, including leaving the Service, write to the address below and we will act without delay.",
+        "You can at any time ask to see, correct or delete your personal information, ask us to stop processing it, or withdraw your consent. You can edit your nickname, country, age group and gender on the \"My page\" screen and delete your own reviews yourself. You can leave the Service yourself with \"Delete account\" on the \"My page\" screen, which immediately deletes everything, including reviews, receipts and manager proof documents. For anything else, write to the address below and we will act without delay.",
       ],
     },
     {
@@ -262,7 +262,7 @@ const ja: LegalDoc = {
       paragraphs: ["個人情報は、利用目的を達成した後、遅滞なく破棄します。ただし次の情報は、記載の期間保管します。"],
       items: [
         "会員情報と口コミ:退会または削除の依頼まで",
-        "領収書画像と読み取り結果:該当の口コミが掲載されている間(同じ領収書の再利用を防ぐ識別値は、不正利用防止のためより長く保管することがあります)",
+        "領収書画像と読み取り結果:該当の口コミが掲載されている間。口コミを削除すると一緒に削除され、口コミを書かなかった領収書はアップロードの30日後(審査中の場合は審査の終了後)に削除されます。同じ領収書の再利用を防ぐ識別値(ハッシュ)のみ、より長く保管します。この値から領収書の内容は分かりません",
         "管理者申請の証明書類:審査中および管理者資格が続く間。資格が終了したら破棄",
         "法令により保管が必要な情報(例:アクセス記録を3か月以上):法令が定める期間",
       ],
@@ -285,7 +285,7 @@ const ja: LegalDoc = {
     {
       heading: "8. 利用者の権利",
       paragraphs: [
-        "利用者はいつでも、自身の個人情報の閲覧・訂正・削除、処理の停止、同意の撤回を求めることができます。ニックネーム・国籍・年代・性別は「マイページ」で自分で編集でき、投稿した口コミも自分で削除できます。その他のご依頼や退会は、下記の連絡先までお送りください。遅滞なく対応します。",
+        "利用者はいつでも、自身の個人情報の閲覧・訂正・削除、処理の停止、同意の撤回を求めることができます。ニックネーム・国籍・年代・性別は「マイページ」で自分で編集でき、投稿した口コミも自分で削除できます。退会は「マイページ」の「退会」から自分で行え、口コミ・領収書・管理者申請の書類を含むすべての情報が直ちに削除されます。その他のご依頼は、下記の連絡先までお送りください。遅滞なく対応します。",
       ],
     },
     {
@@ -365,7 +365,7 @@ const zh: LegalDoc = {
       paragraphs: ["个人信息在达成使用目的后会立即销毁。以下信息按所列期限保存。"],
       items: [
         "会员信息与评价:直至您退出或要求删除",
-        "收据图片与识别结果:在相关评价发布期间(用于防止同一收据重复使用的标识值,为防止滥用可能保存更久)",
+        "收据图片与识别结果:在相关评价发布期间。删除评价时一并删除;未用于撰写评价的收据在上传 30 天后删除(审核中的在审核结束后)。仅保留用于防止同一收据重复使用的标识值(哈希),保存时间更长,无法据此得知收据内容",
         "管理员申请的证明文件:审核期间及管理员资格持续期间,资格终止后销毁",
         "依法必须保存的信息(例如访问记录至少三个月):法律规定的期限",
       ],
@@ -388,7 +388,7 @@ const zh: LegalDoc = {
     {
       heading: "8. 您的权利",
       paragraphs: [
-        "您可以随时要求查阅、更正或删除您的个人信息,要求停止处理,或撤回同意。昵称、国籍、年龄段和性别可在“我的页面”自行修改,您发布的评价也可自行删除。其他请求及注销账号,请发送至下方联系方式,我们会及时处理。",
+        "您可以随时要求查阅、更正或删除您的个人信息,要求停止处理,或撤回同意。昵称、国籍、年龄段和性别可在“我的页面”自行修改,您发布的评价也可自行删除。注销账号可在“我的页面”的“注销账号”中自行完成,包括评价、收据和管理员申请文件在内的所有信息会立即删除。其他请求请发送至下方联系方式,我们会及时处理。",
       ],
     },
     {

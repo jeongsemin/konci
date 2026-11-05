@@ -3,7 +3,7 @@ import { Info } from "lucide-react";
 import { localeNames, locales, type Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { Container } from "@/components/container";
-import { DeleteReviewForm, MemberDetailsForm, NicknameForm } from "./account-forms";
+import { DeleteAccountForm, DeleteReviewForm, MemberDetailsForm, NicknameForm } from "./account-forms";
 
 export type MyReceipt = {
   id: string;
@@ -71,11 +71,13 @@ export function MyView({
   countries,
   details,
   suspension,
+  isAdmin,
 }: {
   lang: Locale;
   dict: Dictionary;
   name: string;
   email: string | null;
+  isAdmin: boolean;
   receipts: MyReceipt[];
   reviews: MyReview[];
   editRequests: MyEditRequest[];
@@ -344,6 +346,7 @@ export function MyView({
               current={details}
               text={{ ...t.details, notLoggedIn: dict.errors.notLoggedIn, generic: dict.errors.generic }}
             />
+            <DeleteAccountForm lang={lang} isAdmin={isAdmin} text={t.deleteAccount} />
           </section>
 
           {/* Language */}

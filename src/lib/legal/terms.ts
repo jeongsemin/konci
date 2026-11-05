@@ -27,7 +27,7 @@ const ko: LegalDoc = {
       items: [
         "회원 가입은 Google 계정 로그인으로 합니다. 만 14세 미만은 가입할 수 없습니다.",
         "계정 관리의 책임은 이용자에게 있으며, 다른 사람에게 계정을 양도하거나 빌려줄 수 없습니다.",
-        "탈퇴를 원하면 운영자에게 요청할 수 있으며, 처리 방법은 개인정보처리방침을 따릅니다.",
+        "\"내 정보\" 화면에서 직접 탈퇴할 수 있으며, 탈퇴하면 정보는 개인정보처리방침에 따라 삭제됩니다.",
       ],
     },
     {
@@ -126,7 +126,7 @@ const en: LegalDoc = {
       items: [
         "You sign up by signing in with a Google account. You must be 14 or older.",
         "You are responsible for your account and may not transfer or lend it to anyone else.",
-        "You can ask the Operator to close your account; the process is described in the Privacy Policy.",
+        "You can delete your account yourself on the \"My page\" screen; what happens to your information is described in the Privacy Policy.",
       ],
     },
     {
@@ -225,7 +225,7 @@ const ja: LegalDoc = {
       items: [
         "会員登録はGoogleアカウントでのログインにより行います。14歳未満の方は登録できません。",
         "アカウントの管理は利用者の責任で行い、他人に譲渡・貸与することはできません。",
-        "退会を希望する場合は運営者に依頼できます。手続きはプライバシーポリシーに従います。",
+        "退会は「マイページ」から自分で行えます。情報の扱いはプライバシーポリシーに従います。",
       ],
     },
     {
@@ -324,7 +324,7 @@ const zh: LegalDoc = {
       items: [
         "注册通过 Google 账号登录完成。未满 14 周岁者不得注册。",
         "账号由用户自行负责管理,不得转让或出借给他人。",
-        "如需注销,可向运营者提出,处理方式见《隐私政策》。",
+        "您可以在“我的页面”自行注销账号,信息的处理方式见《隐私政策》。",
       ],
     },
     {
