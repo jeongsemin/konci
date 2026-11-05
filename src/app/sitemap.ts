@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { locales } from "@/i18n/config";
+import { LEGAL_EFFECTIVE_DATE } from "@/lib/legal";
 import { languageAlternates, siteUrl } from "@/lib/seo";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -22,7 +23,11 @@ function localized(path: string, lastModified: Date, priority: number): Metadata
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const entries = localized("", new Date(), 1);
+  const entries = [
+    ...localized("", new Date(), 1),
+    ...localized("/terms", new Date(LEGAL_EFFECTIVE_DATE), 0.3),
+    ...localized("/privacy", new Date(LEGAL_EFFECTIVE_DATE), 0.3),
+  ];
 
   // Only clinics that have at least one review are worth indexing.
   try {
