@@ -5,6 +5,7 @@ import { CircleAlert } from "lucide-react";
 import { hasLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
 import { safeNext } from "@/lib/auth";
+import { EmailForm } from "./email-form";
 import { GoogleButton } from "./google-button";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
@@ -69,6 +70,10 @@ export default async function LoginPage({ params, searchParams }: PageProps<"/[l
         )}
 
         <GoogleButton lang={lang} next={next} label={t.google} />
+        <p className="flex items-center gap-3 text-xs text-muted before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border">
+          {t.or}
+        </p>
+        <EmailForm lang={lang} next={next} text={t.email} />
         <p className="text-[11px] leading-relaxed text-muted">
           {dict.legal.loginAgree[0]}
           <Link href={`/${lang}/terms`} className="font-bold underline">

@@ -262,9 +262,20 @@
       "Signing in is only needed to write a review."
     ],
     "title": "Sign in",
-    "subtitle": "Continue with Google. A new account is created automatically the first time.",
+    "subtitle": "Continue with your Google account or your email. If you are new, we will create your account automatically.",
     "google": "Continue with Google",
-    "failed": "Sign-in failed. Please try again in a moment."
+    "failed": "Sign-in failed. Please try again in a moment.",
+    "or": "or",
+    "email": {
+      "label": "Sign in with email",
+      "placeholder": "you@example.com",
+      "button": "Email me a sign-in link",
+      "sending": "Sending…",
+      "sent": "We sent a sign-in link to {email}. Open the email and click the link. Please open it in this same browser. If you do not see it, check your spam folder.",
+      "invalid": "Please check the email address.",
+      "tooMany": "Too many requests in a short time. Please try again in a little while.",
+      "failed": "We could not send the email. Please try again in a little while."
+    }
   },
   "hospital": {
     "reviews": "Reviews",
