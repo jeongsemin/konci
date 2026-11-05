@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { readReceipt } from "@/lib/clova-ocr";
 import { isAcceptableSize, sniffImage } from "@/lib/receipt-file";
+import { canReuseHash } from "@/lib/receipt-retention";
 import { decideReceipt } from "@/lib/receipt-verify";
 
 const DAILY_LIMIT = 10;
@@ -45,6 +46,9 @@ export async function POST(request: NextRequest) {
   const fileHash = createHash("sha256").update(bytes).digest("hex");
   const { data: dup } = await admin.from("receipts").select("id").eq("file_hash", fileHash).maybeSingle();
   if (dup) return NextResponse.json({ error: "duplicate" }, { status: 409 });
+  // A photo whose receipt was deleted (with its review or account) can only be used again by the same member.
+  const { data: remembered } = await admin.from("used_receipt_hashes").select("user_id").eq("file_hash", fileHash).maybeSingle();
+  if (remembered && !canReuseHash(remembered.user_id, auth.user.id)) return NextResponse.json({ error: "duplicate" }, { status: 409 });
 
   const storagePath = `${auth.user.id}/${crypto.randomUUID()}.${format}`;
   const { error: upErr } = await admin.storage

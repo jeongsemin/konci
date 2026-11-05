@@ -6,6 +6,7 @@ import { checkRoleChange, parseEmail, type RoleError } from "@/lib/admin-roles";
 import { getProfile } from "@/lib/auth";
 import { hasRoomForManager } from "@/lib/manager-input";
 import { pickSuspendTargets } from "@/lib/member-filters";
+import { removeStored } from "@/lib/receipt-purge";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -201,7 +202,7 @@ export async function decideManager(form: FormData) {
   const reason = String(form.get("reason") ?? "").replace(/\s+/g, " ").trim().slice(0, 200);
 
   const admin = createAdminClient();
-  const { data: application } = await admin.from("hospital_managers").select("id, hospital_id, status").eq("id", managerId).maybeSingle();
+  const { data: application } = await admin.from("hospital_managers").select("id, hospital_id, status, proof_path").eq("id", managerId).maybeSingle();
   if (!application || application.status !== "pending") return;
 
   if (decision === "approve") {
@@ -225,6 +226,8 @@ export async function decideManager(form: FormData) {
     .eq("id", managerId)
     .eq("status", "pending");
   if (error) throw new Error("update failed");
+  // A rejected application's proof is no longer needed: delete it (an approved one is kept while the role lasts).
+  if (decision === "reject") await removeStored(admin, "manager-proofs", [application.proof_path]);
 
   const lang = hasLocale(String(form.get("lang") ?? "")) ? String(form.get("lang")) : "en";
   revalidatePath(`/${lang}/admin/managers`);
@@ -242,13 +245,15 @@ export async function revokeManager(form: FormData) {
   const reason = String(form.get("reason") ?? "").replace(/\s+/g, " ").trim().slice(0, 200);
 
   const admin = createAdminClient();
-  const { data: application } = await admin.from("hospital_managers").select("hospital_id").eq("id", managerId).maybeSingle();
+  const { data: application } = await admin.from("hospital_managers").select("hospital_id, proof_path").eq("id", managerId).maybeSingle();
   const { error } = await admin
     .from("hospital_managers")
     .update({ status: "revoked", reject_reason: reason || null, decided_by: profile.id, decided_at: new Date().toISOString() })
     .eq("id", managerId)
     .eq("status", "active");
   if (error) throw new Error("revoke failed");
+  // The role has ended, so the proof document is deleted too.
+  if (application) await removeStored(admin, "manager-proofs", [application.proof_path]);
 
   const lang = hasLocale(String(form.get("lang") ?? "")) ? String(form.get("lang")) : "en";
   revalidatePath(`/${lang}/admin/managers`);
