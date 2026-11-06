@@ -1009,7 +1009,7 @@
     "effective": "Effective",
     "contactLabel": "Contact",
     "loginAgree": [
-      "By continuing you agree to the ",
+      "I am 14 or older and I agree to the ",
       " and the ",
       "."
     ],
@@ -1017,7 +1017,8 @@
       "I agree that my receipt image is read by a text-recognition service and handled as described in the ",
       "."
     ],
-    "consentRequired": "Please agree to the receipt processing first."
+    "consentRequired": "Please agree to the receipt processing first.",
+    "loginAgreeHint": "Tick the box above to sign in."
   },
   "feedback": {
     "title": "Suggestions",

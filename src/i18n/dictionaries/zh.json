@@ -1009,7 +1009,7 @@
     "effective": "生效日期",
     "contactLabel": "联系方式",
     "loginAgree": [
-      "继续即表示您同意",
+      "我已年满 14 周岁,并同意",
       "和",
       "。"
     ],
@@ -1017,7 +1017,8 @@
       "我同意通过文字识别服务读取我的收据图片,并按照",
       "处理。"
     ],
-    "consentRequired": "请先同意收据处理。"
+    "consentRequired": "请先同意收据处理。",
+    "loginAgreeHint": "请先勾选上方选项再登录。"
   },
   "feedback": {
     "title": "建议留言板",

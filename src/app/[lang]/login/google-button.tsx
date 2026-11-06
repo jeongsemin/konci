@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-export function GoogleButton({ lang, next, label }: { lang: string; next: string; label: string }) {
+export function GoogleButton({ lang, next, label, disabled = false }: { lang: string; next: string; label: string; disabled?: boolean }) {
   const [busy, setBusy] = useState(false);
 
   async function signIn() {
@@ -19,7 +19,7 @@ export function GoogleButton({ lang, next, label }: { lang: string; next: string
   return (
     <button
       onClick={signIn}
-      disabled={busy}
+      disabled={busy || disabled}
       className="flex min-h-12 w-full items-center justify-center gap-3 rounded-sm border border-border bg-white px-5 py-3 text-sm font-bold text-brand hover:bg-brand-soft disabled:opacity-60"
     >
       <svg viewBox="0 0 48 48" className="size-5" aria-hidden>

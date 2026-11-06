@@ -96,7 +96,7 @@ const ko: LegalDoc = {
     },
     {
       heading: "11. 어린이의 개인정보",
-      paragraphs: ["서비스는 만 14세 미만 어린이를 대상으로 하지 않으며, 만 14세 미만의 가입을 받지 않습니다. 가입 사실을 알게 되면 해당 정보를 삭제합니다."],
+      paragraphs: ["서비스는 만 14세 미만 어린이를 대상으로 하지 않으며, 만 14세 미만의 가입을 받지 않습니다. 로그인할 때 만 14세 이상임을 직접 확인받으며, 14세 미만의 가입 사실을 알게 되면 해당 정보를 삭제합니다."],
     },
     {
       heading: "12. 문의처와 권리 구제",
@@ -199,7 +199,7 @@ const en: LegalDoc = {
     },
     {
       heading: "11. Children",
-      paragraphs: ["The Service is not aimed at children under 14 and does not accept sign-ups from them. If we learn that a child under 14 has signed up we will delete that information."],
+      paragraphs: ["The Service is not aimed at children under 14 and does not accept sign-ups from them. You confirm that you are 14 or older when you sign in, and if we learn that a child under 14 has signed up we will delete that information."],
     },
     {
       heading: "12. Contact and remedies",
@@ -302,7 +302,7 @@ const ja: LegalDoc = {
     },
     {
       heading: "11. 子どもの個人情報",
-      paragraphs: ["本サービスは14歳未満の子どもを対象とせず、14歳未満の登録を受け付けません。登録が判明した場合は、その情報を削除します。"],
+      paragraphs: ["本サービスは14歳未満の子どもを対象とせず、14歳未満の登録を受け付けません。ログイン時に14歳以上であることをご自身で確認していただき、14歳未満の登録が判明した場合は、その情報を削除します。"],
     },
     {
       heading: "12. お問い合わせ先と救済手段",
@@ -405,7 +405,7 @@ const zh: LegalDoc = {
     },
     {
       heading: "11. 儿童的个人信息",
-      paragraphs: ["本服务不面向未满 14 周岁的儿童,也不接受其注册。如发现有此类注册,我们将删除相关信息。"],
+      paragraphs: ["本服务不面向未满 14 周岁的儿童,也不接受其注册。登录时需由您自行确认已年满 14 周岁;如发现有未满 14 周岁者注册,我们将删除相关信息。"],
     },
     {
       heading: "12. 联系方式与救济途径",

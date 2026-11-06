@@ -5,8 +5,7 @@ import { CircleAlert } from "lucide-react";
 import { hasLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
 import { safeNext } from "@/lib/auth";
-import { EmailForm } from "./email-form";
-import { GoogleButton } from "./google-button";
+import { LoginPanel } from "./login-panel";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 
@@ -69,22 +68,27 @@ export default async function LoginPage({ params, searchParams }: PageProps<"/[l
           </div>
         )}
 
-        <GoogleButton lang={lang} next={next} label={t.google} />
-        <p className="flex items-center gap-3 text-xs text-muted before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border">
-          {t.or}
-        </p>
-        <EmailForm lang={lang} next={next} text={t.email} />
-        <p className="text-[11px] leading-relaxed text-muted">
-          {dict.legal.loginAgree[0]}
-          <Link href={`/${lang}/terms`} className="font-bold underline">
-            {dict.legal.terms}
-          </Link>
-          {dict.legal.loginAgree[1]}
-          <Link href={`/${lang}/privacy`} className="font-bold underline">
-            {dict.legal.privacy}
-          </Link>
-          {dict.legal.loginAgree[2]}
-        </p>
+        <LoginPanel
+          lang={lang}
+          next={next}
+          googleLabel={t.google}
+          orLabel={t.or}
+          emailText={t.email}
+          hint={dict.legal.loginAgreeHint}
+          agree={
+            <>
+              {dict.legal.loginAgree[0]}
+              <Link href={`/${lang}/terms`} target="_blank" className="font-bold underline">
+                {dict.legal.terms}
+              </Link>
+              {dict.legal.loginAgree[1]}
+              <Link href={`/${lang}/privacy`} target="_blank" className="font-bold underline">
+                {dict.legal.privacy}
+              </Link>
+              {dict.legal.loginAgree[2]}
+            </>
+          }
+        />
       </section>
     </div>
   );

@@ -16,7 +16,7 @@ type Text = {
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export function EmailForm({ lang, next, text }: { lang: string; next: string; text: Text }) {
+export function EmailForm({ lang, next, text, disabled = false }: { lang: string; next: string; text: Text; disabled?: boolean }) {
   const [email, setEmail] = useState("");
   const [state, setState] = useState<"idle" | "sending" | "sent" | "invalid" | "tooMany" | "failed">("idle");
 
@@ -44,11 +44,12 @@ export function EmailForm({ lang, next, text }: { lang: string; next: string; te
           onChange={(e) => setEmail(e.target.value)}
           placeholder={text.placeholder}
           maxLength={254}
+          disabled={disabled}
           className="min-h-[52px] w-full rounded-sm border border-border bg-white p-3.5 text-sm outline-none focus:border-focus"
         />
       </label>
       <button
-        disabled={state === "sending"}
+        disabled={disabled || state === "sending"}
         className="min-h-12 w-full rounded-sm bg-brand px-5 py-3 text-sm font-bold text-white hover:bg-brand-strong disabled:opacity-60"
       >
         {state === "sending" ? text.sending : text.button}

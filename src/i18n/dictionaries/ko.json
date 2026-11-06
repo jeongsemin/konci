@@ -1009,15 +1009,16 @@
     "effective": "시행일",
     "contactLabel": "문의",
     "loginAgree": [
-      "계속하면 ",
+      "만 14세 이상이며 ",
       "과 ",
-      "에 동의한 것으로 봅니다."
+      "에 동의합니다."
     ],
     "receiptConsent": [
       "영수증 이미지를 문자 인식 서비스로 읽고 ",
       "에 따라 처리하는 데 동의합니다."
     ],
-    "consentRequired": "영수증 처리에 먼저 동의해 주세요."
+    "consentRequired": "영수증 처리에 먼저 동의해 주세요.",
+    "loginAgreeHint": "로그인하려면 위 항목에 체크해 주세요."
   },
   "feedback": {
     "title": "건의사항",
