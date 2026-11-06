@@ -354,7 +354,8 @@
       "moved": "This clinic has been confirmed as moved.",
       "noteClosed": "Note",
       "noteMoved": "New address"
-    }
+    },
+    "ctaClosed": "This clinic has closed or moved, so new reviews aren't accepted."
   },
   "review": {
     "title": "Write a review",
@@ -401,7 +402,8 @@
     "generic": "Something went wrong. Please try again.",
     "invalid": "Please check the form and try again.",
     "consent": "Please tick both required agreements.",
-    "suspended": "A suspended account can't use this feature."
+    "suspended": "A suspended account can't use this feature.",
+    "closed": "You can't review a clinic that has closed or moved."
   },
   "reasons": {
     "store_name_missing": "Clinic name not readable",
@@ -840,7 +842,12 @@
       "Disclose any reward or advertising relationship"
     ],
     "verifyTitle": "Your visit is verified by receipt",
-    "verifyBody": "Only users who verified their visit with a receipt can write reviews. Verification confirms the visit, not treatment results, and guarantees nothing about outcomes."
+    "verifyBody": "Only users who verified their visit with a receipt can write reviews. Verification confirms the visit, not treatment results, and guarantees nothing about outcomes.",
+    "closed": {
+      "title": "New reviews aren't accepted for this clinic",
+      "body": "This clinic has been confirmed as closed or moved. Existing reviews stay visible. If this is wrong, please ask for a correction on the clinic page.",
+      "back": "Back to the clinic page"
+    }
   },
   "reviewDetail": {
     "breadcrumb": "{name}  /  Review",

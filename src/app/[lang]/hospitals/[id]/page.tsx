@@ -371,11 +371,17 @@ export default async function HospitalPage({ params, searchParams }: PageProps<"
             <p className="text-[10px] font-bold text-brand">{t.ctaEyebrow}</p>
             <p className="text-xl font-bold leading-snug">{t.ctaTitle}</p>
             <p className="text-[13px] text-muted">{t.ctaBody}</p>
-            <Link href={`/${lang}/hospitals/${id}/review`} className="flex min-h-12 items-center justify-center gap-2 rounded-sm bg-brand px-5 py-3 text-sm font-bold text-white hover:bg-brand-strong">
-              <PenLine className="size-5" aria-hidden />
-              {t.ctaButton}
-            </Link>
-            <p className="text-[11px] text-muted">{t.ctaNote}</p>
+            {hospital.closed_at ? (
+              <p className="rounded-sm bg-surface p-3.5 text-xs leading-relaxed text-muted">{dict.hospital.ctaClosed}</p>
+            ) : (
+              <>
+                <Link href={`/${lang}/hospitals/${id}/review`} className="flex min-h-12 items-center justify-center gap-2 rounded-sm bg-brand px-5 py-3 text-sm font-bold text-white hover:bg-brand-strong">
+                  <PenLine className="size-5" aria-hidden />
+                  {t.ctaButton}
+                </Link>
+                <p className="text-[11px] text-muted">{t.ctaNote}</p>
+              </>
+            )}
           </div>
           <div className="flex items-start gap-3 rounded-[12px] bg-brand-soft p-5">
             <Info className="size-5 shrink-0 text-brand" aria-hidden />

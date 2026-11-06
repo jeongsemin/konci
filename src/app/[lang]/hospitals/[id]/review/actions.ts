@@ -5,7 +5,7 @@ import { hasLocale } from "@/i18n/config";
 import { parseReviewInput } from "@/lib/review-input";
 import { createClient } from "@/lib/supabase/server";
 
-export type ReviewState = { error?: "notLoggedIn" | "invalid" | "consent" | "alreadyUsed" | "suspended" | "generic" } | null;
+export type ReviewState = { error?: "notLoggedIn" | "invalid" | "consent" | "alreadyUsed" | "suspended" | "closed" | "generic" } | null;
 
 export async function submitReview(_prev: ReviewState, form: FormData): Promise<ReviewState> {
   const parsed = parseReviewInput((key) => {
@@ -23,6 +23,9 @@ export async function submitReview(_prev: ReviewState, form: FormData): Promise<
   // RLS also refuses a suspended author; checking first lets us say why. A member can read only their own row.
   const { data: suspension } = await supabase.from("suspensions").select("user_id").eq("user_id", auth.user.id).maybeSingle();
   if (suspension) return { error: "suspended" };
+
+  const { data: hospital } = await supabase.from("hospitals").select("closed_at").eq("id", input.hospitalId).maybeSingle();
+  if (hospital?.closed_at) return { error: "closed" };
 
   // RLS verifies that the receipt is the author's, matches the clinic and is approved.
   const { error } = await supabase.from("reviews").insert({

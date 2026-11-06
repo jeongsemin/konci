@@ -30,10 +30,11 @@ export async function POST(request: NextRequest) {
 
   const { data: hospital } = await admin
     .from("hospitals")
-    .select("id, name")
+    .select("id, name, closed_at")
     .eq("id", hospitalId)
     .maybeSingle();
   if (!hospital) return NextResponse.json({ error: "invalid" }, { status: 400 });
+  if (hospital.closed_at) return NextResponse.json({ error: "closed" }, { status: 409 });
 
   const since = new Date(Date.now() - 86_400_000).toISOString();
   const { count } = await admin

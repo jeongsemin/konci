@@ -31,10 +31,24 @@ export default async function ReviewPage({ params }: PageProps<"/[lang]/hospital
 
   const { data: hospital } = await supabase
     .from("hospitals")
-    .select("id, name, road_address, address, sido, sgg")
+    .select("id, name, road_address, address, sido, sgg, closed_at")
     .eq("id", id)
     .single();
   if (!hospital) notFound();
+
+  // A clinic that closed or moved takes no new reviews (the existing ones stay on its page).
+  if (hospital.closed_at) {
+    return (
+      <Container className="max-w-2xl space-y-5 py-16">
+        <h1 className="text-2xl font-bold leading-snug md:text-[32px]">{w.closed.title}</h1>
+        <p className="text-sm font-bold">{hospital.name}</p>
+        <p className="text-sm leading-relaxed text-muted">{w.closed.body}</p>
+        <Link href={`/${lang}/hospitals/${id}`} className="inline-block text-sm font-bold text-brand hover:underline">
+          ← {w.closed.back}
+        </Link>
+      </Container>
+    );
+  }
 
   const [{ data: receipts }, { data: mine }] = await Promise.all([
     supabase

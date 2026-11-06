@@ -66,7 +66,8 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
       .limit(12),
     supabase
       .from("reviews")
-      .select("id, rating, body, treatment, visit_date, created_at, profiles(display_name), hospitals(id, name)")
+      .select("id, rating, body, treatment, visit_date, created_at, profiles(display_name), hospitals!inner(id, name, closed_at)")
+      .is("hospitals.closed_at", null)
       .order("created_at", { ascending: false })
       .limit(2),
   ]);
