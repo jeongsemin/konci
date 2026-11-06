@@ -185,7 +185,9 @@ export async function searchHospitals(input: SearchInput): Promise<SearchOutcome
   const slices = planSlices(counts, (shown - 1) * PAGE_SIZE, PAGE_SIZE);
 
   // Most reviewed first (the rating only breaks a tie), unless the rating order was asked for.
-  // Name and id make the order total, so a hospital never shows up on two pages.
+  // Among hospitals that tie on both (mostly none have reviews yet), those that list dermatology come
+  // first, since that is what this service is about. Name and id make the order total, so a hospital
+  // never shows up on two pages.
   const desc = { ascending: false, nullsFirst: false };
   const fetched = await Promise.all(
     slices.map(({ tier, from, to }) => {
@@ -194,7 +196,7 @@ export async function searchHospitals(input: SearchInput): Promise<SearchOutcome
         input.sort === "rating"
           ? query.order("avg_rating", desc).order("review_count", desc)
           : query.order("review_count", desc).order("avg_rating", desc);
-      return ordered.order("name").order("id").range(from, to);
+      return ordered.order("derm_listed", desc).order("name").order("id").range(from, to);
     }),
   );
   if (fetched.some((r) => r.error)) return { results: [], total: 0, page: shown, error: "db" };
