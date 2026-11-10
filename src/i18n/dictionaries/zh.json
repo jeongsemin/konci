@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "MediMate – 韩国医院与皮肤科真实评价",
+    "title": "KONCI – 韩国医院与皮肤科真实评价",
     "description": "由真实就诊者撰写、经小票验证的评价，帮你找到靠谱的韩国医院和皮肤科。"
   },
   "nav": {
@@ -338,7 +338,7 @@
       "more": "查看更多评价",
       "noMatch": "没有符合条件的评价。",
       "medicalTitle": "医疗决定需通过问诊",
-      "medicalBody": "请与医务人员充分沟通项目是否适合、副作用、恢复时间和替代方案。MediMate 不保证诊断、治疗或结果。",
+      "medicalBody": "请与医务人员充分沟通项目是否适合、副作用、恢复时间和替代方案。KONCI 不保证诊断、治疗或结果。",
       "ctaEyebrow": "撰写评价",
       "ctaTitle": "你来过这里吗？",
       "ctaBody": "拍下小票验证就诊，即可分享你的真实体验。",
@@ -567,7 +567,7 @@
       "title": "管理员",
       "subtitle": "可以审核小票并管理管理员的用户。最后一位管理员无法移除。",
       "emailLabel": "通过邮箱添加管理员",
-      "emailHelp": "对方必须至少登录过一次 MediMate。",
+      "emailHelp": "对方必须至少登录过一次 KONCI。",
       "emailPlaceholder": "name@example.com",
       "add": "添加管理员",
       "adding": "添加中…",
@@ -790,8 +790,8 @@
     "back": "返回"
   },
   "footer": {
-    "disclaimer": "MediMate 是帮助浏览医疗信息的服务，不能替代诊断或治疗。实际诊疗、价格和预约条件请直接向诊所确认。",
-    "meta": "© 2026 MediMate"
+    "disclaimer": "KONCI 是帮助浏览医疗信息的服务，不能替代诊断或治疗。实际诊疗、价格和预约条件请直接向诊所确认。",
+    "meta": "© 2026 KONCI"
   },
   "write": {
     "breadcrumb": [

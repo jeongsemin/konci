@@ -1,4 +1,4 @@
-# MediMate
+# KONCI
 
 **Honest, receipt-verified reviews of Korean hospitals and dermatology clinics, written by real patients for travelers.**
 Available in English, 日本語, 中文 and 한국어.
@@ -79,7 +79,7 @@ Supabase **SQL 편집기**에서 `supabase/migrations/`의 파일을 **번호 �
 | `0011_feedback` · `0012_feedback_private` | 건의사항 게시판, 작성자·관리자만 읽기 |
 | `0013_email_login` | 이름이 없는 가입(이메일 로그인)의 닉네임을 `Member 1a2b`처럼 임의로 부여 (이메일 앞부분이 후기에 노출되지 않게) |
 
-**영수증 정리:** `node --env-file=.env.local scripts/purge-receipts.ts [--dry-run]`은 후기가 없는 영수증을 30일 뒤 삭제합니다(심사 중은 제외). 배포 후 정기 실행에 등록해야 합니다.
+**영수증 정리:** `node --env-file=.env.local scripts/purge-receipts.ts [--dry-run]`은 후기가 없는 영수증을 30일 뒤 삭제합니다(심사 중은 제외). 배포 후 정기 실행에 등록해야 합니다. 배포 순서는 [DEPLOY.md](DEPLOY.md)에 정리했습니다.
 
 ### 3. 병원 데이터 적재 (심평원)
 

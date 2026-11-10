@@ -8,7 +8,7 @@ export function Footer({ lang, dict }: { lang: Locale; dict: Dictionary }) {
     <footer className="bg-surface">
       <Container className="space-y-6 py-10">
         <Link href={`/${lang}`} className="block text-[25px] font-bold leading-none">
-          medimate
+          konci
         </Link>
         <p className="max-w-3xl text-xs leading-relaxed text-muted">{dict.footer.disclaimer}</p>
         <p className="flex flex-wrap gap-x-4 gap-y-1 text-xs font-bold">

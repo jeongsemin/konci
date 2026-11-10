@@ -8,10 +8,16 @@ import { LanguageSwitcher } from "./language-switcher";
 export function BrandMark({ lang }: { lang: Locale }) {
   return (
     <Link href={`/${lang}`} className="flex items-center gap-2">
-      <span className="flex size-[30px] items-center justify-center rounded-[10px] bg-brand text-[23px] font-bold leading-none text-white">
-        m
-      </span>
-      <span className="text-[25px] font-bold leading-none text-foreground">medimate</span>
+      <svg viewBox="0 0 512 512" className="size-[30px]" aria-hidden="true">
+        <rect width="512" height="512" rx="116" className="fill-brand" />
+        <g stroke="#fff" strokeWidth="68" strokeLinecap="round" fill="none">
+          <path d="M168 118v276" />
+          <path d="M190 300 262 228" />
+          <path d="M226 272 336 394" />
+        </g>
+        <circle cx="338" cy="150" r="42" fill="#fff" />
+      </svg>
+      <span className="text-[25px] font-bold leading-none text-foreground">konci</span>
     </Link>
   );
 }

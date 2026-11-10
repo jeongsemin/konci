@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 // The ".ts" extension lets the plain Node test runner resolve this import.
 import { locales, type Locale } from "../i18n/config.ts";
 
-export const SITE_NAME = "MediMate";
+export const SITE_NAME = "KONCI";
 
 const HREFLANG: Record<Locale, string> = { en: "en", ja: "ja", zh: "zh-CN", ko: "ko" };
 const OG_LOCALE: Record<Locale, string> = { en: "en_US", ja: "ja_JP", zh: "zh_CN", ko: "ko_KR" };

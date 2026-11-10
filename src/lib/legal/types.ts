@@ -21,7 +21,7 @@ export const CONTACT_TOKEN = "{contact}";
 
 /** Contact address shown in the documents; set NEXT_PUBLIC_CONTACT_EMAIL before launch. */
 export function contactEmail(): string {
-  return process.env.NEXT_PUBLIC_CONTACT_EMAIL || "contact@medimate.example";
+  return process.env.NEXT_PUBLIC_CONTACT_EMAIL || "contact@konci.example";
 }
 
 /** Fills the contact token in every string of a document. */

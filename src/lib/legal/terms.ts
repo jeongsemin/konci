@@ -6,7 +6,7 @@ import type { LegalDoc } from "./types.ts";
 const ko: LegalDoc = {
   title: "이용약관",
   intro:
-    "이 약관은 MediMate(이하 \"서비스\")를 이용하는 데 필요한 서비스 운영자(이하 \"운영자\")와 이용자의 권리, 의무, 책임을 정합니다. 서비스를 이용하면 이 약관에 동의한 것으로 봅니다.",
+    "이 약관은 KONCI(이하 \"서비스\")를 이용하는 데 필요한 서비스 운영자(이하 \"운영자\")와 이용자의 권리, 의무, 책임을 정합니다. 서비스를 이용하면 이 약관에 동의한 것으로 봅니다.",
   sections: [
     {
       heading: "1. 서비스의 내용",
@@ -105,7 +105,7 @@ const ko: LegalDoc = {
 const en: LegalDoc = {
   title: "Terms of Service",
   intro:
-    "These terms set out the rights, duties and responsibilities between the operator of MediMate (the \"Service\", the \"Operator\") and its users. By using the Service you agree to these terms.",
+    "These terms set out the rights, duties and responsibilities between the operator of KONCI (the \"Service\", the \"Operator\") and its users. By using the Service you agree to these terms.",
   sections: [
     {
       heading: "1. What the Service is",
@@ -204,7 +204,7 @@ const en: LegalDoc = {
 const ja: LegalDoc = {
   title: "利用規約",
   intro:
-    "本規約は、MediMate(以下「本サービス」)の運営者(以下「運営者」)と利用者との間の権利、義務、責任を定めるものです。本サービスを利用することで、本規約に同意したものとみなします。",
+    "本規約は、KONCI(以下「本サービス」)の運営者(以下「運営者」)と利用者との間の権利、義務、責任を定めるものです。本サービスを利用することで、本規約に同意したものとみなします。",
   sections: [
     {
       heading: "1. サービスの内容",
@@ -303,7 +303,7 @@ const ja: LegalDoc = {
 const zh: LegalDoc = {
   title: "服务条款",
   intro:
-    "本条款规定 MediMate(以下简称“本服务”)的运营者(以下简称“运营者”)与用户之间的权利、义务和责任。使用本服务即视为同意本条款。",
+    "本条款规定 KONCI(以下简称“本服务”)的运营者(以下简称“运营者”)与用户之间的权利、义务和责任。使用本服务即视为同意本条款。",
   sections: [
     {
       heading: "1. 服务内容",

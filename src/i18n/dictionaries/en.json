@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "MediMate – Honest hospital & clinic reviews in Korea",
+    "title": "KONCI – Honest hospital & clinic reviews in Korea",
     "description": "Receipt-verified reviews of Korean hospitals and dermatology clinics, written by real travelers."
   },
   "nav": {
@@ -338,7 +338,7 @@
       "more": "Show more reviews",
       "noMatch": "No reviews match.",
       "medicalTitle": "Medical decisions start with a consultation",
-      "medicalBody": "Discuss suitability, side effects, recovery time and alternatives with the medical staff. MediMate does not guarantee diagnosis, treatment or results.",
+      "medicalBody": "Discuss suitability, side effects, recovery time and alternatives with the medical staff. KONCI does not guarantee diagnosis, treatment or results.",
       "ctaEyebrow": "WRITE A REVIEW",
       "ctaTitle": "Have you visited?",
       "ctaBody": "Photograph your receipt to verify your visit and share your honest experience.",
@@ -512,7 +512,7 @@
         "Your receipt photos and the text read from them",
         "Your reports, correction requests and clinic manager applications, with their proof documents"
       ],
-      "note": "Your Google account itself is not affected. To use MediMate again you will sign up from scratch.",
+      "note": "Your Google account itself is not affected. To use KONCI again you will sign up from scratch.",
       "admin": "Administrators can't delete their account. Ask another administrator to remove your role first.",
       "confirm": "I understand that this cannot be undone.",
       "button": "Delete my account",
@@ -567,7 +567,7 @@
       "title": "Administrators",
       "subtitle": "People who can review receipts and manage administrators. The last administrator can't be removed.",
       "emailLabel": "Add an administrator by email",
-      "emailHelp": "The person must have signed in to MediMate at least once.",
+      "emailHelp": "The person must have signed in to KONCI at least once.",
       "emailPlaceholder": "name@example.com",
       "add": "Add administrator",
       "adding": "Adding…",
@@ -790,8 +790,8 @@
     "back": "Back"
   },
   "footer": {
-    "disclaimer": "MediMate helps you browse medical information and does not replace diagnosis or treatment. Confirm actual treatment, prices and booking conditions directly with the clinic.",
-    "meta": "© 2026 MediMate"
+    "disclaimer": "KONCI helps you browse medical information and does not replace diagnosis or treatment. Confirm actual treatment, prices and booking conditions directly with the clinic.",
+    "meta": "© 2026 KONCI"
   },
   "write": {
     "breadcrumb": [

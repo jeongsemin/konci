@@ -6,7 +6,7 @@ import type { LegalDoc } from "./types.ts";
 const ko: LegalDoc = {
   title: "개인정보처리방침",
   intro:
-    "MediMate(이하 \"서비스\")는 이용자의 개인정보를 소중히 다루며, 「개인정보 보호법」 등 관련 법령을 따릅니다. 이 방침은 서비스가 어떤 정보를 왜 모으고, 어떻게 쓰고 보관하며, 이용자가 어떤 권리를 갖는지 설명합니다.",
+    "KONCI(이하 \"서비스\")는 이용자의 개인정보를 소중히 다루며, 「개인정보 보호법」 등 관련 법령을 따릅니다. 이 방침은 서비스가 어떤 정보를 왜 모으고, 어떻게 쓰고 보관하며, 이용자가 어떤 권리를 갖는지 설명합니다.",
   sections: [
     {
       heading: "1. 수집하는 개인정보와 방법",
@@ -115,7 +115,7 @@ const ko: LegalDoc = {
 const en: LegalDoc = {
   title: "Privacy Policy",
   intro:
-    "MediMate (the \"Service\") treats your personal information with care and follows the Personal Information Protection Act of Korea and related laws. This policy explains what we collect and why, how we use and keep it, and what rights you have.",
+    "KONCI (the \"Service\") treats your personal information with care and follows the Personal Information Protection Act of Korea and related laws. This policy explains what we collect and why, how we use and keep it, and what rights you have.",
   sections: [
     {
       heading: "1. What we collect and how",
@@ -218,7 +218,7 @@ const en: LegalDoc = {
 const ja: LegalDoc = {
   title: "プライバシーポリシー",
   intro:
-    "MediMate(以下「本サービス」)は、利用者の個人情報を大切に扱い、韓国の個人情報保護法などの関連法令に従います。本ポリシーでは、どのような情報をなぜ収集し、どのように利用・保管するか、また利用者にどのような権利があるかを説明します。",
+    "KONCI(以下「本サービス」)は、利用者の個人情報を大切に扱い、韓国の個人情報保護法などの関連法令に従います。本ポリシーでは、どのような情報をなぜ収集し、どのように利用・保管するか、また利用者にどのような権利があるかを説明します。",
   sections: [
     {
       heading: "1. 収集する個人情報と方法",
@@ -321,7 +321,7 @@ const ja: LegalDoc = {
 const zh: LegalDoc = {
   title: "隐私政策",
   intro:
-    "MediMate(以下简称“本服务”)重视用户的个人信息,并遵守韩国《个人信息保护法》等相关法律。本政策说明我们收集哪些信息、为何收集、如何使用和保存,以及您享有哪些权利。",
+    "KONCI(以下简称“本服务”)重视用户的个人信息,并遵守韩国《个人信息保护法》等相关法律。本政策说明我们收集哪些信息、为何收集、如何使用和保存,以及您享有哪些权利。",
   sections: [
     {
       heading: "1. 收集的个人信息与方式",
