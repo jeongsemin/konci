@@ -9,7 +9,7 @@
 Next.js 16 서버 렌더링이 필요합니다(정적 내보내기 불가). 가장 쉬운 선택은 Vercel이고, 직접 서버를 쓴다면 `npm run build` 후 `npm run start`로 띄웁니다.
 
 - [ ] 호스팅 업체와 서버 위치(국가)를 정한다. 이 두 가지는 개인정보처리방침의 "국외 이전·처리위탁" 항목에 그대로 적어야 한다.
-- [ ] GitHub 저장소(`jeongsemin/medimate`)를 연결하고 `main`을 배포 브랜치로 지정한다.
+- [ ] GitHub 저장소(`jeongsemin/konci`)를 연결하고 `main`을 배포 브랜치로 지정한다.
 
 ## 1-1. 도메인 (konci.kr)
 
