@@ -4,10 +4,10 @@
 :root {
   --background: #fafbfa; /* Canvas */
   --foreground: #172f35; /* Ink */
-  --muted: #63767b;
+  --muted: #5e7075; /* darkened from #63767b: 4.5:1 on every tinted background (WCAG AA) */
   --card: #ffffff;
   --border: #dce5e4;
-  --brand: #087f83; /* Accent */
+  --brand: #08797c; /* Accent; darkened from #087f83 for 4.5:1 text contrast on tints */
   --brand-strong: #066669; /* Accent, pressed/hover */
   --brand-soft: #eaf5f3; /* Tint */
   --focus: #177dc1;
@@ -40,9 +40,7 @@
   --radius-md: 16px;
   --radius-lg: 24px;
 
-  --font-sans:
-    var(--font-inter), var(--font-noto-kr), var(--font-noto-jp),
-    var(--font-noto-sc), system-ui, sans-serif;
+  --font-sans: var(--font-inter), var(--font-noto-kr), system-ui, sans-serif;
 }
 
 body {
@@ -50,6 +48,22 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
   line-height: 1.6;
+}
+
+/*
+ * Japanese and Chinese use the device's own fonts: web fonts for them are large (dozens of files per page).
+ * They come before Noto Sans KR so kanji/hanzi take Japanese/Chinese shapes, while Hangul (clinic names),
+ * which these system fonts lack, still falls through to Noto Sans KR.
+ */
+:lang(ja) body {
+  font-family:
+    var(--font-inter), "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Yu Gothic", Meiryo,
+    "Noto Sans JP", var(--font-noto-kr), system-ui, sans-serif;
+}
+:lang(zh) body {
+  font-family:
+    var(--font-inter), "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei UI", "Microsoft YaHei",
+    "Noto Sans SC", "Noto Sans CJK SC", var(--font-noto-kr), system-ui, sans-serif;
 }
 
 :focus-visible {

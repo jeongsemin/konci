@@ -207,7 +207,6 @@ export default async function SearchPage({ params, searchParams }: PageProps<"/[
                     <Link
                       href={href({ compare: f.compare.filter((x) => x !== c.id), page: outcome.page })}
                       scroll={false}
-                      aria-pressed
                       className="flex min-h-8 items-center gap-2 hover:text-brand"
                     >
                       <SquareCheck className="size-4 shrink-0 text-brand" aria-hidden />
@@ -390,7 +389,8 @@ function ResultCard({ r, lang, dict, selected, toggleHref }: { r: SearchResult; 
         <Link href={`/${lang}/hospitals/${r.id}`} className="hover:underline">
           {t.viewDetail} →
         </Link>
-        <Link href={toggleHref} scroll={false} aria-pressed={selected} className="flex items-center gap-1.5 hover:underline">
+        {/* A link, not a toggle button, so no aria-pressed: the label itself says whether it is selected. */}
+        <Link href={toggleHref} scroll={false} className="flex items-center gap-1.5 hover:underline">
           {selected ? <SquareCheck className="size-4" aria-hidden /> : <Square className="size-4" aria-hidden />}
           {selected ? t.compareOn : t.compare}
         </Link>
