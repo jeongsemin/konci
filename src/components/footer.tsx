@@ -12,6 +12,9 @@ export function Footer({ lang, dict }: { lang: Locale; dict: Dictionary }) {
         </Link>
         <p className="max-w-3xl text-xs leading-relaxed text-muted">{dict.footer.disclaimer}</p>
         <p className="flex flex-wrap gap-x-4 gap-y-1 text-xs font-bold">
+          <Link href={`/${lang}/booking-guide`} className="hover:text-brand">
+            {dict.booking.link}
+          </Link>
           <Link href={`/${lang}/terms`} className="hover:text-brand">
             {dict.legal.terms}
           </Link>

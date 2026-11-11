@@ -1077,5 +1077,25 @@
       "save": "保存"
     },
     "emptyAdmin": "还没有建议。"
+  },
+  "booking": {
+    "link": "预约方式",
+    "updated": "最后确认",
+    "boxTitle": "预约方式",
+    "boxBody": "KONCI 不接受预约。请通过以下方式直接联系诊所。",
+    "call": "给诊所打电话",
+    "website": "诊所官网",
+    "naverHint": "在 NAVER 地图上找“预约(예약)”按钮。",
+    "phrases": "给诊所看的韩语句子",
+    "guide": "阅读预约指南",
+    "help": "韩语沟通有困难？拨打 1330（外国手机请拨 +82-2-1330；英语·日语·中文 24 小时）。",
+    "showLarge": "放大显示",
+    "close": "关闭",
+    "naverLink": "打开 NAVER 地图",
+    "fromAbroad": "用外国手机拨打",
+    "copy": "复制",
+    "copied": "已复制",
+    "date": "日期",
+    "time": "时间"
   }
 }

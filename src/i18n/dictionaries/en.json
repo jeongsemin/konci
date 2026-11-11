@@ -1077,5 +1077,25 @@
       "save": "Save"
     },
     "emptyAdmin": "No suggestions yet."
+  },
+  "booking": {
+    "link": "How to book",
+    "updated": "Last checked",
+    "boxTitle": "How to book",
+    "boxBody": "KONCI doesn't take bookings. Contact the clinic directly in one of these ways.",
+    "call": "Call the clinic",
+    "website": "Clinic website",
+    "naverHint": "On Naver Map, look for the 'Booking' (예약) button.",
+    "phrases": "Korean phrases to show the clinic",
+    "guide": "Read the booking guide",
+    "help": "Need help with Korean? Call 1330 (from a foreign phone +82-2-1330; 24 h in English · Japanese · Chinese).",
+    "showLarge": "Show large",
+    "close": "Close",
+    "naverLink": "Open Naver Map",
+    "fromAbroad": "From a foreign phone",
+    "copy": "Copy",
+    "copied": "Copied",
+    "date": "Date",
+    "time": "Time"
   }
 }

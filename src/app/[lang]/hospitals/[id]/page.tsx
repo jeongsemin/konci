@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BadgeCheck, Clock, ExternalLink, Globe, Info, MapPin, PenLine, Phone } from "lucide-react";
+import { BadgeCheck, CalendarCheck, Clock, ExternalLink, Globe, Info, MapPin, PenLine, Phone } from "lucide-react";
 import { hasLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
 import { aggregateReviews, type ReviewRow } from "@/lib/search-params";
@@ -8,6 +8,8 @@ import { categoryLine, namesLine } from "@/lib/region";
 import { createClient } from "@/lib/supabase/server";
 import { Container } from "@/components/container";
 import { StarRating } from "@/components/star-rating";
+import { PhoneText } from "@/components/phone-text";
+import { phoneLinks } from "@/lib/phone";
 import type { Metadata } from "next";
 import { clinicDescription, pageMetadata } from "@/lib/seo";
 
@@ -85,6 +87,9 @@ export default async function HospitalPage({ params, searchParams }: PageProps<"
   };
 
   const address = hospital.road_address || hospital.address;
+  // Only web links are shown as links, whatever the column holds.
+  const hasWebsite = !!hospital.homepage && /^https?:\/\//i.test(hospital.homepage);
+  const phone = hospital.phone ? phoneLinks(hospital.phone) : null;
   const naverUrl = hospital.naver_link || `https://map.naver.com/p/search/${encodeURIComponent(`${hospital.name} ${address ?? ""}`.trim())}`;
   const googleUrl =
     hospital.lat && hospital.lng
@@ -186,19 +191,23 @@ export default async function HospitalPage({ params, searchParams }: PageProps<"
                   </dd>
                 )}
               </div>
-              {hospital.phone && (
+              {phone && (
                 <div className="space-y-1">
                   <dt className="flex items-center gap-1.5 text-[15px] font-bold">
                     <Phone className="size-4 text-muted" aria-hidden />
                     {t.phone}
                   </dt>
                   <dd className="text-sm">
-                    <a href={`tel:${hospital.phone}`} className="hover:text-brand">{hospital.phone}</a>
+                    <a href={phone.href} className="hover:text-brand">{phone.display}</a>
                   </dd>
+                  {phone.international && (
+                    <dd className="text-xs text-muted">
+                      {dict.booking.fromAbroad}: {phone.international}
+                    </dd>
+                  )}
                 </div>
               )}
-              {/* Only web links are shown as links, whatever the column holds. */}
-              {hospital.homepage && /^https?:\/\//i.test(hospital.homepage) && (
+              {hasWebsite && (
                 <div className="space-y-1">
                   <dt className="flex items-center gap-1.5 text-[15px] font-bold">
                     <Globe className="size-4 text-muted" aria-hidden />
@@ -242,6 +251,51 @@ export default async function HospitalPage({ params, searchParams }: PageProps<"
                 </a>
               </div>
             </div>
+            {/* Booking help: KONCI never takes bookings, it only points to the clinic's own channels. */}
+            {!hospital.closed_at && (
+              <div id="booking" className="scroll-mt-6 space-y-3 rounded-md border border-border bg-card p-5">
+                <p className="flex items-center gap-1.5 text-[15px] font-bold">
+                  <CalendarCheck className="size-4 text-brand" aria-hidden />
+                  {dict.booking.boxTitle}
+                </p>
+                <p className="text-[13px] text-muted">{dict.booking.boxBody}</p>
+                {(phone || hasWebsite) && (
+                  <div className="flex flex-wrap gap-3">
+                    {phone && (
+                      <a href={phone.href} className="flex min-h-12 items-center gap-2 rounded-sm bg-brand px-5 py-3 text-sm font-bold text-white hover:bg-brand-strong">
+                        <Phone className="size-4" aria-hidden />
+                        {dict.booking.call}
+                      </a>
+                    )}
+                    {hasWebsite && (
+                      <a href={hospital.homepage!} target="_blank" rel="nofollow noopener noreferrer" className="flex min-h-12 items-center gap-2 rounded-sm border border-border bg-white px-5 py-3 text-sm font-bold text-brand hover:bg-brand-soft">
+                        <Globe className="size-4" aria-hidden />
+                        {dict.booking.website}
+                        <ExternalLink className="size-4" aria-hidden />
+                      </a>
+                    )}
+                  </div>
+                )}
+                <p className="text-xs text-muted">
+                  {dict.booking.naverHint}{" "}
+                  <a href={naverUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 whitespace-nowrap font-bold text-brand hover:underline">
+                    {dict.booking.naverLink}
+                    <ExternalLink className="size-3" aria-hidden />
+                  </a>
+                </p>
+                <p className="text-xs text-muted">
+                  <PhoneText text={dict.booking.help} />
+                </p>
+                <p className="flex flex-wrap gap-x-6 gap-y-2 text-sm font-bold">
+                  <Link href={`/${lang}/booking-guide#phrases`} className="text-brand hover:underline">
+                    {dict.booking.phrases} →
+                  </Link>
+                  <Link href={`/${lang}/booking-guide`} className="text-muted hover:text-foreground hover:underline">
+                    {dict.booking.guide} →
+                  </Link>
+                </p>
+              </div>
+            )}
           </section>
 
           {/* Language support, from reviews */}
