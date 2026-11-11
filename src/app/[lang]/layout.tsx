@@ -8,6 +8,7 @@ import { getDictionary } from "@/i18n/dictionaries";
 import { SITE_NAME, siteUrl } from "@/lib/seo";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
+import { SiteAnalytics } from "@/components/site-analytics";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const notoKr = Noto_Sans_KR({ weight: ["400", "500", "700"], variable: "--font-noto-kr", display: "swap", preload: false });
@@ -46,6 +47,7 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
         </Suspense>
         <main className="flex-1">{children}</main>
         <Footer lang={lang} dict={dict} />
+        <SiteAnalytics />
       </body>
     </html>
   );

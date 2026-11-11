@@ -17,7 +17,7 @@ const ko: LegalDoc = {
         "후기를 쓸 때(필수): 진료비 영수증 사진, 영수증에서 읽은 병원명·결제일·결제 금액, 후기 내용·평점·방문일·진료 항목. 영수증에는 진료 내역 등 건강에 관한 정보가 포함될 수 있습니다.",
         "병원 관리자 신청 시: 신청자의 소속·역할 설명과 증빙 서류(사업자등록증, 재직 증명 등).",
         "신고·수정 요청 시: 신고 사유와 제출한 내용. 건의사항 게시판에 글을 쓸 때: 제목과 내용(작성자와 운영자만 볼 수 있습니다).",
-        "자동으로 생성되는 정보: 로그인 상태를 유지하는 쿠키, 언어 설정 쿠키, 접속 기록(IP 주소, 접속 시각, 브라우저 정보)이 호스팅·인증 서비스에 남을 수 있습니다.",
+        "자동으로 생성되는 정보: 로그인 상태를 유지하는 쿠키, 언어 설정 쿠키, 접속 기록(IP 주소, 접속 시각, 브라우저 정보)이 호스팅·인증 서비스에 남을 수 있습니다. 또한 쿠키 없이 페이지별 방문 수와 대략적인 국가, 기기·브라우저 종류를 통계로 집계합니다(Vercel Web Analytics). 검색어 등 주소의 질의 부분과 로그인·마이페이지·관리자 화면은 집계하지 않습니다.",
       ],
     },
     {
@@ -126,7 +126,7 @@ const en: LegalDoc = {
         "When you write a review (required): a photo of your medical receipt, the clinic name, payment date and amount read from it, and your review text, rating, visit date and treatment. A receipt can contain details of your treatment, which is health-related information.",
         "When you apply as a clinic manager: a description of your role and proof documents (for example a business registration or employment certificate).",
         "When you report or request a correction: the reason and what you submitted. When you post on the suggestion board: the title and text (visible only to you and the operators).",
-        "Generated automatically: cookies that keep you signed in and remember your language, and access logs (IP address, time, browser information) that our hosting and authentication providers may keep.",
+        "Generated automatically: cookies that keep you signed in and remember your language, and access logs (IP address, time, browser information) that our hosting and authentication providers may keep. We also count page visits, with the approximate country and device and browser type, as statistics without cookies (Vercel Web Analytics). Search words and other query parts of the address, and the sign-in, My page and admin screens, are not counted.",
       ],
     },
     {
@@ -229,7 +229,7 @@ const ja: LegalDoc = {
         "口コミ投稿時(必須):診療費領収書の写真、領収書から読み取った医療機関名・支払日・金額、口コミ本文・評価・受診日・診療内容。領収書には診療内容など健康に関する情報が含まれる場合があります。",
         "医療機関の管理者申請時:役割の説明と証明書類(事業者登録証、在職証明など)。",
         "通報・修正リクエスト時:理由と提出内容。ご意見板への投稿時:タイトルと本文(投稿者本人と運営者のみが閲覧できます)。",
-        "自動的に生成される情報:ログイン状態維持用と言語設定用のCookie、およびアクセス記録(IPアドレス、時刻、ブラウザ情報)。ホスティング・認証事業者に残る場合があります。",
+        "自動的に生成される情報:ログイン状態維持用と言語設定用のCookie、およびアクセス記録(IPアドレス、時刻、ブラウザ情報)。ホスティング・認証事業者に残る場合があります。また、Cookieを使わずに、ページごとの訪問数とおおよその国、端末・ブラウザの種類を統計として集計します(Vercel Web Analytics)。検索語などアドレスのクエリ部分と、ログイン・マイページ・管理画面は集計しません。",
       ],
     },
     {
@@ -332,7 +332,7 @@ const zh: LegalDoc = {
         "撰写评价时(必填):医疗收据照片,从中识别出的医院名称、付款日期和金额,以及评价内容、评分、就诊日期和诊疗项目。收据可能包含诊疗明细等与健康有关的信息。",
         "申请成为医院管理员时:对职责的说明和证明文件(如营业执照、在职证明)。",
         "举报或提交更正请求时:理由和所提交的内容。在建议留言板发帖时:标题和内容(仅您本人和运营者可见)。",
-        "自动生成的信息:用于保持登录状态和记住语言的 Cookie,以及访问记录(IP 地址、访问时间、浏览器信息),托管和认证服务商可能会保留这些记录。",
+        "自动生成的信息:用于保持登录状态和记住语言的 Cookie,以及访问记录(IP 地址、访问时间、浏览器信息),托管和认证服务商可能会保留这些记录。此外,我们在不使用 Cookie 的情况下统计各页面的访问量、大致国家以及设备和浏览器类型(Vercel Web Analytics)。搜索词等网址中的查询部分,以及登录、我的页面和管理页面不计入统计。",
       ],
     },
     {

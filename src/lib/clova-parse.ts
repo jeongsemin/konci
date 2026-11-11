@@ -61,6 +61,33 @@ function parseText(node: unknown): string | null {
   return value || null;
 }
 
+/** An approval number of 4–20 digits (hyphens and spaces dropped), or null. */
+export function parseApprovalNo(node: unknown): string | null {
+  const text = dig(node, "text");
+  if (typeof text !== "string" && typeof text !== "number") return null;
+  const digits = String(text).replace(/[\s-]/g, "");
+  return /^\d{4,20}$/.test(digits) ? digits : null;
+}
+
+/** A payment time as HH:MM, or null. */
+export function parseTime(node: unknown): string | null {
+  const formatted = dig(node, "formatted");
+  let hour: number;
+  let minute: number;
+  if (isObj(formatted) && formatted.hour !== undefined && formatted.hour !== "") {
+    hour = Number(formatted.hour);
+    minute = Number(formatted.minute ?? 0);
+  } else {
+    const text = dig(node, "text");
+    const m = typeof text === "string" ? text.match(/(\d{1,2})\s*:\s*(\d{2})/) : null;
+    if (!m) return null;
+    hour = Number(m[1]);
+    minute = Number(m[2]);
+  }
+  if (!Number.isInteger(hour) || !Number.isInteger(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
+  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+}
+
 /**
  * Returns the parsed receipt, or null when the response is unusable
  * (malformed, or CLOVA reports that it could not read the image).
@@ -80,5 +107,7 @@ export function parseClovaResult(raw: unknown): OcrReceipt | null {
     storeName: parseText(dig(result, "storeInfo", "name")),
     paidOn: parseDate(dig(result, "paymentInfo", "date")),
     total: parseTotal(dig(result, "totalPrice", "price")),
+    approvalNo: parseApprovalNo(dig(result, "paymentInfo", "confirmNum")),
+    paidTime: parseTime(dig(result, "paymentInfo", "time")),
   };
 }

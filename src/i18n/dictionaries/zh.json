@@ -398,7 +398,7 @@
   "errors": {
     "notLoggedIn": "请先登录。",
     "badFile": "仅支持 10 MB 以内的 JPG 或 PNG 图片。",
-    "duplicate": "该小票照片已被提交过。",
+    "duplicate": "这张小票已被使用。每张小票只能用于一条评价。",
     "generic": "出错了，请重试。",
     "invalid": "请检查表单后重试。",
     "consent": "请勾选所有必填的同意项。",

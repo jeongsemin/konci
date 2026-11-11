@@ -39,8 +39,12 @@ Next.js 16 서버 렌더링이 필요합니다(정적 내보내기 불가). 가�
   - Redirect URLs: `https://konci.kr/auth/callback` 추가
 - [ ] Google 로그인: Google Cloud Console의 OAuth 클라이언트에 승인된 리디렉션 URI로 Supabase 콜백 주소(`https://tkovpirqrbmshkiwfbsl.supabase.co/auth/v1/callback`)가 있는지 확인. 동의 화면을 "프로덕션"으로 게시하지 않으면 테스트 사용자만 로그인할 수 있다.
 - [ ] 이메일 로그인용 SMTP: Authentication > SMTP Settings에 메일 서비스를 연결한다. 기본 메일은 시간당 발송 한도가 작고 영어 템플릿이라 실서비스에 부적합하다. 연결 후 Authentication > Email Templates의 매직 링크 문구를 한국어·영어 등으로 고친다.
-- [ ] 마이그레이션 0001–0013이 모두 적용돼 있는지 확인(현재 적용 완료).
+- [ ] 마이그레이션 0001–0014가 모두 적용돼 있는지 확인. 0014(같은 영수증 재사용 차단)는 **코드를 배포하기 전에** 적용해야 영수증 업로드가 깨지지 않는다.
 - [ ] 관리자 계정이 지정돼 있는지 확인.
+
+## 3-1. 방문 통계
+
+- [ ] Vercel 프로젝트 > Analytics에서 Web Analytics를 켠다(코드는 이미 들어가 있음, 쿠키 없음). 검색어 등 주소의 질의 부분과 로그인·마이페이지·관리자 화면은 보내지 않는다.
 
 ## 4. 병원 데이터
 
@@ -60,6 +64,8 @@ Next.js 16 서버 렌더링이 필요합니다(정적 내보내기 불가). 가�
 - [ ] 후기 작성 → 영수증 업로드 → (관리자) 승인 흐름
 - [ ] `/robots.txt`, `/sitemap.xml`이 실제 도메인으로 나온다
 - [ ] 응답 헤더에 `X-Frame-Options`, `Strict-Transport-Security`가 있다
+- [ ] 메인·병원 링크를 카카오톡 등에 붙여 공유 카드 이미지가 나온다 (`/ko/opengraph-image`로 직접 확인 가능)
+- [ ] 구글 [리치 결과 테스트](https://search.google.com/test/rich-results)에 병원 페이지 주소를 넣어 MedicalClinic 정보가 읽힌다
 - [ ] 약관·방침 하단의 문의 메일이 실제 주소다
 - [ ] 사이트 이름이 KONCI로 나온다 (탭 제목, 헤더 로고, 푸터)
 

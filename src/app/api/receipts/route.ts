@@ -5,7 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { readReceipt } from "@/lib/clova-ocr";
 import { isAcceptableSize, sniffImage } from "@/lib/receipt-file";
 import { canReuseHash } from "@/lib/receipt-retention";
-import { decideReceipt } from "@/lib/receipt-verify";
+import { decideReceipt, receiptContentKey } from "@/lib/receipt-verify";
 
 const DAILY_LIMIT = 10;
 
@@ -61,6 +61,23 @@ export async function POST(request: NextRequest) {
   const ocr = await readReceipt(bytes, format);
   const { status, reasons, score } = decideReceipt(ocr?.parsed ?? null, hospital.name);
 
+  // One paper receipt, one review: a new photo of a receipt already in use is refused, for any member.
+  // Only checked when the OCR read the date, total and approval number (or time); otherwise the manual queue decides.
+  const contentKey = (() => {
+    const key = receiptContentKey(ocr?.parsed ?? null);
+    return key ? createHash("sha256").update(key).digest("hex") : null;
+  })();
+  if (contentKey) {
+    const [{ data: live }, { data: gone }] = await Promise.all([
+      admin.from("receipts").select("id").eq("content_key", contentKey).neq("status", "rejected").limit(1).maybeSingle(),
+      admin.from("used_receipt_hashes").select("user_id").eq("file_hash", `key:${contentKey}`).maybeSingle(),
+    ]);
+    if (live || (gone && !canReuseHash(gone.user_id, auth.user.id))) {
+      await admin.storage.from("receipts").remove([storagePath]);
+      return NextResponse.json({ error: "duplicate" }, { status: 409 });
+    }
+  }
+
   const { data: receipt, error } = await admin
     .from("receipts")
     .insert({
@@ -68,6 +85,7 @@ export async function POST(request: NextRequest) {
       hospital_id: hospital.id,
       storage_path: storagePath,
       file_hash: fileHash,
+      content_key: contentKey,
       status,
       ocr_store_name: ocr?.parsed.storeName ?? null,
       ocr_paid_on: ocr?.parsed.paidOn ?? null,

@@ -11,7 +11,7 @@ import { StarRating } from "@/components/star-rating";
 import { PhoneText } from "@/components/phone-text";
 import { phoneLinks } from "@/lib/phone";
 import type { Metadata } from "next";
-import { clinicDescription, pageMetadata } from "@/lib/seo";
+import { clinicDescription, clinicJsonLd, jsonLdScript, pageMetadata, siteUrl } from "@/lib/seo";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const PAGE = 10;
@@ -34,6 +34,7 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/hospitals/
   return pageMetadata({
     lang,
     path: `/hospitals/${id}`,
+    image: `/${lang}/hospitals/${id}/opengraph-image`,
     title: hospital.name,
     description: clinicDescription({
       name: hospital.name,
@@ -116,8 +117,20 @@ export default async function HospitalPage({ params, searchParams }: PageProps<"
 
   const [crumbRoot, crumbHere] = t.breadcrumb.split("  /  ");
 
+  const jsonLd = clinicJsonLd({
+    name: hospital.name,
+    url: `${siteUrl()}/${lang}/hospitals/${id}`,
+    address,
+    telephone: phone?.international ?? phone?.display ?? null,
+    lat: hospital.lat,
+    lng: hospital.lng,
+    reviewCount: stats.total,
+    avgRating: stats.avgRating,
+  });
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLd) }} />
       {/* Identity */}
       <section className="bg-white py-7">
         <Container className="space-y-6">

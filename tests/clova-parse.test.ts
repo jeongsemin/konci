@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { MAX_TOTAL, parseAmount, parseClovaResult, toIsoDate } from "../src/lib/clova-parse.ts";
+import { MAX_TOTAL, parseAmount, parseApprovalNo, parseClovaResult, parseTime, toIsoDate } from "../src/lib/clova-parse.ts";
 
 // Fixtures follow the documented shape of a CLOVA OCR receipt response
 // (images[].inferResult, images[].receipt.result.*). They are hand-built, not captured
@@ -12,13 +12,23 @@ const response = (result: Record<string, unknown>, inferResult: string = "SUCCES
 
 const full = response({
   storeInfo: { name: { text: "서울맑은피부과의원" } },
-  paymentInfo: { date: { text: "2026-10-05", formatted: { year: "2026", month: "10", day: "05" } } },
+  paymentInfo: {
+    date: { text: "2026-10-05", formatted: { year: "2026", month: "10", day: "05" } },
+    time: { text: "14:12:10", formatted: { hour: "14", minute: "12", second: "10" } },
+    confirmNum: { text: "3012-4567" },
+  },
   totalPrice: { price: { text: "55,000", formatted: { value: "55000" } } },
 });
 
 describe("parseClovaResult", () => {
   it("extracts store name, date and total from a normal response", () => {
-    assert.deepEqual(parseClovaResult(full), { storeName: "서울맑은피부과의원", paidOn: "2026-10-05", total: 55000 });
+    assert.deepEqual(parseClovaResult(full), {
+      storeName: "서울맑은피부과의원",
+      paidOn: "2026-10-05",
+      total: 55000,
+      approvalNo: "30124567",
+      paidTime: "14:12",
+    });
   });
 
   it("returns null when CLOVA could not read the image", () => {
@@ -33,7 +43,7 @@ describe("parseClovaResult", () => {
   });
 
   it("returns empty fields for a readable receipt that lacks them", () => {
-    assert.deepEqual(parseClovaResult(response({})), { storeName: null, paidOn: null, total: null });
+    assert.deepEqual(parseClovaResult(response({})), { storeName: null, paidOn: null, total: null, approvalNo: null, paidTime: null });
   });
 
   it("trims and collapses whitespace in the store name, and rejects blank names", () => {
@@ -125,5 +135,19 @@ describe("toIsoDate", () => {
   it("rejects non-integers and NaN", () => {
     assert.equal(toIsoDate(2026.5, 1, 1), null);
     assert.equal(toIsoDate(NaN, 1, 1), null);
+  });
+});
+
+describe("approval number and payment time", () => {
+  it("keeps 4–20 digits of the approval number and drops separators", () => {
+    assert.equal(parseApprovalNo({ text: "3012 4567" }), "30124567");
+    assert.equal(parseApprovalNo({ text: 12345678 }), "12345678");
+    for (const bad of [{ text: "123" }, { text: "승인 1234" }, { text: "" }, {}, null, "1234"]) assert.equal(parseApprovalNo(bad), null);
+  });
+
+  it("reads the time from the formatted parts or from the text", () => {
+    assert.equal(parseTime({ formatted: { hour: "9", minute: "5" } }), "09:05");
+    assert.equal(parseTime({ text: "PM 14 : 07" }), "14:07");
+    for (const bad of [{ text: "25:00" }, { formatted: { hour: "12", minute: "61" } }, { text: "no time" }, null]) assert.equal(parseTime(bad), null);
   });
 });

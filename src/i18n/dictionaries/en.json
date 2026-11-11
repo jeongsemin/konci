@@ -398,7 +398,7 @@
   "errors": {
     "notLoggedIn": "Please sign in first.",
     "badFile": "Only JPG or PNG images up to 10 MB are accepted.",
-    "duplicate": "This receipt photo has already been submitted.",
+    "duplicate": "This receipt has already been used. Each receipt can be used for one review only.",
     "generic": "Something went wrong. Please try again.",
     "invalid": "Please check the form and try again.",
     "consent": "Please tick both required agreements.",

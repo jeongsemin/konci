@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { daysBetween, decideReceipt, nameSimilarity, verifyReceipt } from "../src/lib/receipt-verify.ts";
+import { daysBetween, decideReceipt, nameSimilarity, receiptContentKey, verifyReceipt } from "../src/lib/receipt-verify.ts";
 
 const now = new Date("2026-10-12T03:00:00Z");
 
@@ -26,7 +26,7 @@ describe("daysBetween", () => {
 });
 
 describe("verifyReceipt", () => {
-  const ok = { storeName: "서울맑은피부과의원", paidOn: "2026-10-05", total: 55000 };
+  const ok = { storeName: "서울맑은피부과의원", paidOn: "2026-10-05", total: 55000, approvalNo: null, paidTime: null };
 
   it("passes a matching recent receipt", () => {
     const r = verifyReceipt(ok, "서울맑은피부과", now);
@@ -43,13 +43,13 @@ describe("verifyReceipt", () => {
     assert.ok(verifyReceipt({ ...ok, paidOn: "2026-12-01" }, "서울맑은피부과", now).reasons.includes("date_in_future"));
   });
   it("flags unreadable fields", () => {
-    const r = verifyReceipt({ storeName: null, paidOn: null, total: null }, "서울맑은피부과", now);
+    const r = verifyReceipt({ storeName: null, paidOn: null, total: null, approvalNo: null, paidTime: null }, "서울맑은피부과", now);
     assert.deepEqual(r.reasons, ["store_name_missing", "date_missing", "total_missing"]);
   });
 });
 
 describe("decideReceipt", () => {
-  const ok = { storeName: "서울맑은피부과의원", paidOn: "2026-10-05", total: 55000 };
+  const ok = { storeName: "서울맑은피부과의원", paidOn: "2026-10-05", total: 55000, approvalNo: null, paidTime: null };
 
   it("auto-approves only a fully matching receipt", () => {
     assert.deepEqual(decideReceipt(ok, "서울맑은피부과", now), { status: "auto_approved", reasons: [], score: 1 });
@@ -61,7 +61,7 @@ describe("decideReceipt", () => {
     assert.ok(d.score !== null && d.score < 0.6);
   });
   it("collects every failing check", () => {
-    const d = decideReceipt({ storeName: null, paidOn: "2026-01-01", total: null }, "서울맑은피부과", now);
+    const d = decideReceipt({ storeName: null, paidOn: "2026-01-01", total: null, approvalNo: null, paidTime: null }, "서울맑은피부과", now);
     assert.deepEqual(d.reasons, ["store_name_missing", "date_too_old", "total_missing"]);
     assert.equal(d.status, "pending");
   });
@@ -70,5 +70,27 @@ describe("decideReceipt", () => {
   });
   it("never auto-approves a future-dated receipt", () => {
     assert.equal(decideReceipt({ ...ok, paidOn: "2026-12-31" }, "서울맑은피부과", now).status, "pending");
+  });
+});
+
+describe("receiptContentKey", () => {
+  const base = { storeName: "피부과", paidOn: "2026-10-05", total: 55000, approvalNo: null, paidTime: null };
+
+  it("prefers the card approval number, then the payment time", () => {
+    assert.equal(receiptContentKey({ ...base, approvalNo: "30124567", paidTime: "14:12" }), "2026-10-05|55000|a:30124567");
+    assert.equal(receiptContentKey({ ...base, paidTime: "14:12" }), "2026-10-05|55000|t:14:12");
+  });
+
+  it("is the same for two photos of one receipt, whatever the store name was read as", () => {
+    const a = receiptContentKey({ ...base, approvalNo: "30124567" });
+    const b = receiptContentKey({ ...base, storeName: "서울 피부과의원", approvalNo: "30124567" });
+    assert.equal(a, b);
+  });
+
+  it("is null when the OCR did not read enough to tell receipts apart", () => {
+    assert.equal(receiptContentKey(null), null);
+    assert.equal(receiptContentKey(base), null);
+    assert.equal(receiptContentKey({ ...base, paidOn: null, approvalNo: "30124567" }), null);
+    assert.equal(receiptContentKey({ ...base, total: null, paidTime: "14:12" }), null);
   });
 });

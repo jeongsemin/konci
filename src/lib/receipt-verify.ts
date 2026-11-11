@@ -5,6 +5,9 @@ export type OcrReceipt = {
   storeName: string | null;
   paidOn: string | null; // YYYY-MM-DD
   total: number | null;
+  /** Card approval number (승인번호), digits only. */
+  approvalNo: string | null;
+  paidTime: string | null; // HH:MM
 };
 
 export type VerifyResult = {
@@ -76,6 +79,18 @@ export function verifyReceipt(
   if (!ocr.total || ocr.total <= 0) reasons.push("total_missing");
 
   return { score: Math.round(score * 1000) / 1000, passed: reasons.length === 0, reasons };
+}
+
+/**
+ * What identifies one paper receipt, whoever photographs it and however: the payment date and total,
+ * plus the card approval number or, without one, the payment time. Null when the OCR did not read enough,
+ * so an uncertain match never blocks an upload (it goes to the manual queue as usual).
+ */
+export function receiptContentKey(ocr: OcrReceipt | null): string | null {
+  if (!ocr?.paidOn || !ocr.total) return null;
+  if (ocr.approvalNo) return `${ocr.paidOn}|${ocr.total}|a:${ocr.approvalNo}`;
+  if (ocr.paidTime) return `${ocr.paidOn}|${ocr.total}|t:${ocr.paidTime}`;
+  return null;
 }
 
 export type ReceiptDecision = {
