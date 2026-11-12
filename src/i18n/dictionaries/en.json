@@ -1097,5 +1097,28 @@
     "copied": "Copied",
     "date": "Date",
     "time": "Time"
+  },
+  "glossary": {
+    "link": "Treatment guide",
+    "title": "Korean clinic treatments, explained",
+    "intro": "What the Korean names of common dermatology treatments mean, what the days after usually look like, and what to ask before you decide. This is general information, not medical advice: whether a treatment suits you is for a doctor to judge.",
+    "updated": "Last checked",
+    "kinds": {
+      "laser": "Laser",
+      "injection": "Injection",
+      "device": "Device",
+      "care": "Skin care"
+    },
+    "koreanName": "Korean name",
+    "about": "What it is",
+    "after": "Afterwards",
+    "ask": "Ask the clinic",
+    "priceNote": "Prices differ a lot by clinic, area and amount (shots, units, cc). Ask for the total, including VAT, before you decide.",
+    "phraseTitle": "Say it at the clinic",
+    "findClinics": "Find clinics with reviews of it",
+    "back": "All treatments",
+    "seeAll": "See the treatment guide",
+    "disclaimer": "General information only. It does not recommend any treatment or clinic, and results and risks differ from person to person. Discuss suitability, side effects and alternatives with a doctor.",
+    "phraseMeaning": "I'd like a consultation about {name}."
   }
 }

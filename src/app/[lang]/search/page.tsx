@@ -25,6 +25,7 @@ import { Container } from "@/components/container";
 import { SearchForm } from "@/components/search-form";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
+import { treatmentByKo } from "@/lib/treatment-glossary";
 
 const fill = (template: string, values: Record<string, string | number>) =>
   template.replace(/\{(\w+)\}/g, (_, key) => String(values[key] ?? ""));
@@ -49,11 +50,16 @@ async function loadCompare(ids: string[]): Promise<CompareHospital[]> {
   });
 }
 
+/** The display name of an area or treatment value; a glossary treatment shows in the viewer's language. */
+const label = (lang: Locale, items: { name: string; q: string }[], q: string) =>
+  items.find((i) => i.q === q)?.name ?? treatmentByKo(q)?.text[lang].name ?? q;
+
 export async function generateMetadata({ params, searchParams }: PageProps<"/[lang]/search">): Promise<Metadata> {
   const { lang } = await params;
   if (!hasLocale(lang)) return {};
   const dict = await getDictionary(lang);
-  const phrase = displayQuery(parseParams(await searchParams));
+  const f = parseParams(await searchParams);
+  const phrase = displayQuery(f, label(lang, dict.home.areas.items, f.area), label(lang, dict.home.treatments.items, f.treatment));
   return pageMetadata({
     lang,
     path: "/search",
@@ -84,11 +90,10 @@ export default async function SearchPage({ params, searchParams }: PageProps<"/[
   const href = (patch: Partial<Filters>) => `/${lang}/search${toQueryString({ ...f, page: 1, ...patch })}`;
   const reset: Partial<Filters> = { area: "", treatment: "", rating: 0, reviews: 0, english: false, director: false };
 
-  const label = (items: { name: string; q: string }[], q: string) => items.find((i) => i.q === q)?.name ?? q;
-  const phrase = displayQuery(f, label(dict.home.areas.items, f.area), label(dict.home.treatments.items, f.treatment));
+  const phrase = displayQuery(f, label(lang, dict.home.areas.items, f.area), label(lang, dict.home.treatments.items, f.treatment));
   const chips: { key: string; text: string; patch: Partial<Filters> }[] = [
-    f.area && { key: "area", text: label(dict.home.areas.items, f.area), patch: { area: "" } },
-    f.treatment && { key: "treatment", text: label(dict.home.treatments.items, f.treatment), patch: { treatment: "" } },
+    f.area && { key: "area", text: label(lang, dict.home.areas.items, f.area), patch: { area: "" } },
+    f.treatment && { key: "treatment", text: label(lang, dict.home.treatments.items, f.treatment), patch: { treatment: "" } },
     f.q && { key: "q", text: f.q, patch: { q: "" } },
     f.rating && { key: "rating", text: fill(t.chips.rating, { n: (f.rating / 10).toFixed(1) }), patch: { rating: 0 } },
     f.reviews && { key: "reviews", text: fill(t.chips.reviews, { n: f.reviews }), patch: { reviews: 0 } },

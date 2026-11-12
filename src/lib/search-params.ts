@@ -1,5 +1,6 @@
 // Pure helpers for the search & compare page. Kept free of server-only imports
 // so they can be unit tested with the plain Node test runner.
+import { treatmentByKo } from "./treatment-glossary.ts";
 
 export type Sort = "relevance" | "rating" | "reviews";
 export const MAX_COMPARE = 3;
@@ -111,6 +112,9 @@ const safeWord = (s: string) => s.replace(/[,()%*\\_.]/g, " ").replace(/\s+/g, "
  */
 export function treatmentSpec(treatment: string): TreatmentSpec | null {
   if (Object.hasOwn(TREATMENTS, treatment)) return TREATMENTS[treatment];
+  // A glossary treatment (linked from its page) looks for its names in all four languages.
+  const glossary = treatmentByKo(treatment);
+  if (glossary) return { keywords: glossary.keywords.map(safeWord).filter(Boolean) };
   const word = safeWord(treatment);
   return word ? { keywords: [word] } : null;
 }

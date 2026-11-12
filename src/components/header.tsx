@@ -27,6 +27,7 @@ export async function Header({ lang, dict }: { lang: Locale; dict: Dictionary })
 
   const links = [
     { href: `/${lang}#search`, label: dict.nav.find },
+    { href: `/${lang}/treatments`, label: dict.glossary.link },
     { href: `/${lang}/booking-guide`, label: dict.booking.link },
     { href: `/${lang}/feedback`, label: dict.nav.feedback },
     ...(profile ? [{ href: `/${lang}/my`, label: dict.nav.my }] : []),

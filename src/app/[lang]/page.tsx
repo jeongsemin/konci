@@ -181,6 +181,11 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
               );
             })}
           </ul>
+          <p className="text-sm font-bold">
+            <Link href={`/${lang}/treatments`} className="text-brand hover:underline">
+              {dict.glossary.seeAll} →
+            </Link>
+          </p>
         </section>
       </Container>
 

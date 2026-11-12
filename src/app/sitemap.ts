@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { locales } from "@/i18n/config";
 import { BOOKING_GUIDE_UPDATED } from "@/lib/booking-guide";
+import { GLOSSARY_UPDATED, TREATMENTS } from "@/lib/treatment-glossary";
 import { LEGAL_EFFECTIVE_DATE } from "@/lib/legal";
 import { languageAlternates, siteUrl } from "@/lib/seo";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -27,6 +28,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entries = [
     ...localized("", new Date(), 1),
     ...localized("/booking-guide", new Date(BOOKING_GUIDE_UPDATED), 0.6),
+    ...localized("/treatments", new Date(GLOSSARY_UPDATED), 0.6),
+    ...TREATMENTS.flatMap((t) => localized(`/treatments/${t.slug}`, new Date(GLOSSARY_UPDATED), 0.5)),
     ...localized("/terms", new Date(LEGAL_EFFECTIVE_DATE), 0.3),
     ...localized("/privacy", new Date(LEGAL_EFFECTIVE_DATE), 0.3),
   ];
