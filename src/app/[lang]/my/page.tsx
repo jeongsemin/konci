@@ -22,7 +22,7 @@ export default async function MyPage({ params }: PageProps<"/[lang]/my">) {
   const dict = await getDictionary(lang);
   const supabase = await createClient();
 
-  const [{ data: auth }, { data: receipts }, { data: reviews }, { data: details }, { data: suspension }, { data: editRequests }, { data: managerApps }] = await Promise.all([
+  const [{ data: auth }, { data: receipts }, { data: reviews }, { data: details }, { data: suspension }, { data: editRequests }, { data: managerApps }, { data: saved }] = await Promise.all([
     supabase.auth.getUser(),
     supabase
       .from("receipts")
@@ -51,6 +51,12 @@ export default async function MyPage({ params }: PageProps<"/[lang]/my">) {
       .eq("user_id", profile.id)
       .order("created_at", { ascending: false })
       .limit(20),
+    // Saved clinics (migration 0015); empty until it is applied.
+    supabase
+      .from("saved_hospitals")
+      .select("hospital_id, created_at, hospitals(id, name, category, sido, sgg, closed_at)")
+      .eq("user_id", profile.id)
+      .order("created_at", { ascending: false }),
   ]);
 
   const regionNames = new Intl.DisplayNames(lang, { type: "region" });
@@ -69,6 +75,7 @@ export default async function MyPage({ params }: PageProps<"/[lang]/my">) {
       reviews={reviews ?? []}
       editRequests={editRequests ?? []}
       managerApps={managerApps ?? []}
+      saved={saved ?? []}
       countries={countries}
       details={details ?? { country: null, age_group: null, gender: null }}
       suspension={suspension ? { reason: suspension.reason } : null}

@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Container } from "@/components/container";
 import { StarRating } from "@/components/star-rating";
 import { PhoneText } from "@/components/phone-text";
+import { SaveButton } from "@/components/save-button";
 import { phoneLinks } from "@/lib/phone";
 import type { Metadata } from "next";
 import { clinicDescription, clinicJsonLd, jsonLdScript, pageMetadata, siteUrl } from "@/lib/seo";
@@ -58,7 +59,7 @@ export default async function HospitalPage({ params, searchParams }: PageProps<"
   const t = dict.hospital.detail;
   const supabase = await createClient();
 
-  const [{ data: hospital }, { data: reviews }] = await Promise.all([
+  const [{ data: hospital }, { data: reviews }, { data: auth }] = await Promise.all([
     supabase.from("hospitals").select("*").eq("id", id).single(),
     supabase
       .from("reviews")
@@ -66,8 +67,14 @@ export default async function HospitalPage({ params, searchParams }: PageProps<"
       .eq("hospital_id", id)
       .order("created_at", { ascending: false })
       .limit(200),
+    supabase.auth.getUser(),
   ]);
   if (!hospital) notFound();
+  // RLS returns only the member's own rows; before migration 0015 the table is missing and nothing shows as saved.
+  const { data: savedRow } = auth.user
+    ? await supabase.from("saved_hospitals").select("hospital_id").eq("hospital_id", id).maybeSingle()
+    : { data: null };
+  const saved = !!savedRow;
 
   const all = reviews ?? [];
   const stats = aggregateReviews(all as unknown as ReviewRow[]);
@@ -169,6 +176,9 @@ export default async function HospitalPage({ params, searchParams }: PageProps<"
               )}
             </div>
             <p className="text-xs text-muted">{[address, ...summary].filter(Boolean).join(" · ")}</p>
+            <div className="pt-2">
+              <SaveButton lang={lang} hospitalId={id} saved={saved} signedIn={!!auth.user} labels={dict.saved} />
+            </div>
           </div>
         </Container>
       </section>

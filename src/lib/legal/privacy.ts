@@ -13,7 +13,7 @@ const ko: LegalDoc = {
       paragraphs: ["서비스는 아래 정보를 이용자가 직접 입력하거나 Google 로그인을 통해 받습니다."],
       items: [
         "로그인할 때(필수): Google 계정으로 로그인하면 이름, 이메일 주소, 프로필 사진을, 이메일로 로그인하면 이메일 주소를 받습니다. Google 계정의 이름은 닉네임의 초기값으로 쓰이고, 이메일 로그인은 임의의 닉네임이 부여됩니다.",
-        "프로필(선택): 닉네임, 국적, 연령대, 성별. 입력하지 않아도 서비스를 이용할 수 있습니다.",
+        "프로필(선택): 닉네임, 국적, 연령대, 성별. 입력하지 않아도 서비스를 이용할 수 있습니다. 병원을 저장하면 저장한 병원 목록도 보관하며, 본인만 볼 수 있습니다.",
         "후기를 쓸 때(필수): 진료비 영수증 사진, 영수증에서 읽은 병원명·결제일·결제 금액, 후기 내용·평점·방문일·진료 항목. 영수증에는 진료 내역 등 건강에 관한 정보가 포함될 수 있습니다.",
         "병원 관리자 신청 시: 신청자의 소속·역할 설명과 증빙 서류(사업자등록증, 재직 증명 등).",
         "신고·수정 요청 시: 신고 사유와 제출한 내용. 건의사항 게시판에 글을 쓸 때: 제목과 내용(작성자와 운영자만 볼 수 있습니다).",
@@ -122,7 +122,7 @@ const en: LegalDoc = {
       paragraphs: ["We receive the following information from you directly or through Google sign-in."],
       items: [
         "When you sign in (required): with Google, the name, email address and profile photo of your Google account; with email, your email address. A Google name becomes your starting nickname; an email sign-in gets a generic one.",
-        "Profile (optional): nickname, country, age group and gender. You can use the Service without filling these in.",
+        "Profile (optional): nickname, country, age group and gender. You can use the Service without filling these in. If you save clinics, we also keep your list of saved clinics, which only you can see.",
         "When you write a review (required): a photo of your medical receipt, the clinic name, payment date and amount read from it, and your review text, rating, visit date and treatment. A receipt can contain details of your treatment, which is health-related information.",
         "When you apply as a clinic manager: a description of your role and proof documents (for example a business registration or employment certificate).",
         "When you report or request a correction: the reason and what you submitted. When you post on the suggestion board: the title and text (visible only to you and the operators).",
@@ -225,7 +225,7 @@ const ja: LegalDoc = {
       paragraphs: ["以下の情報を、利用者の入力またはGoogleログインを通じて取得します。"],
       items: [
         "ログイン時(必須):Googleでログインする場合はGoogleアカウントの名前・メールアドレス・プロフィール写真、メールでログインする場合はメールアドレス。Googleの名前はニックネームの初期値になり、メールログインでは任意のニックネームが付きます。",
-        "プロフィール(任意):ニックネーム、国籍、年代、性別。入力しなくても本サービスを利用できます。",
+        "プロフィール(任意):ニックネーム、国籍、年代、性別。入力しなくても本サービスを利用できます。病院を保存した場合は保存した病院のリストも保管し、本人だけが見られます。",
         "口コミ投稿時(必須):診療費領収書の写真、領収書から読み取った医療機関名・支払日・金額、口コミ本文・評価・受診日・診療内容。領収書には診療内容など健康に関する情報が含まれる場合があります。",
         "医療機関の管理者申請時:役割の説明と証明書類(事業者登録証、在職証明など)。",
         "通報・修正リクエスト時:理由と提出内容。ご意見板への投稿時:タイトルと本文(投稿者本人と運営者のみが閲覧できます)。",
@@ -328,7 +328,7 @@ const zh: LegalDoc = {
       paragraphs: ["我们通过您的直接填写或 Google 登录获取以下信息。"],
       items: [
         "登录时(必填):使用 Google 登录时为 Google 账号的姓名、电子邮箱和头像;使用电子邮箱登录时为电子邮箱。Google 姓名将作为昵称的初始值,电子邮箱登录则会分配一个随机昵称。",
-        "个人资料(选填):昵称、国籍、年龄段、性别。不填写也可使用本服务。",
+        "个人资料(选填):昵称、国籍、年龄段、性别。不填写也可使用本服务。如果收藏诊所，我们也会保存你的收藏列表，只有你本人可以查看。",
         "撰写评价时(必填):医疗收据照片,从中识别出的医院名称、付款日期和金额,以及评价内容、评分、就诊日期和诊疗项目。收据可能包含诊疗明细等与健康有关的信息。",
         "申请成为医院管理员时:对职责的说明和证明文件(如营业执照、在职证明)。",
         "举报或提交更正请求时:理由和所提交的内容。在建议留言板发帖时:标题和内容(仅您本人和运营者可见)。",

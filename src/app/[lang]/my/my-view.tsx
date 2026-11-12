@@ -4,6 +4,8 @@ import { localeNames, locales, type Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { Container } from "@/components/container";
 import { DeleteAccountForm, DeleteReviewForm, MemberDetailsForm, NicknameForm } from "./account-forms";
+import { categoryLine } from "@/lib/region";
+import { SaveButton } from "@/components/save-button";
 
 export type MyReceipt = {
   id: string;
@@ -33,6 +35,12 @@ export type MyEditRequest = {
   value: string | null;
   status: string;
   reject_reason: string | null;
+  created_at: string;
+  hospitals: unknown;
+};
+
+export type MySaved = {
+  hospital_id: string;
   created_at: string;
   hospitals: unknown;
 };
@@ -68,6 +76,7 @@ export function MyView({
   reviews,
   editRequests,
   managerApps,
+  saved,
   countries,
   details,
   suspension,
@@ -82,6 +91,7 @@ export function MyView({
   reviews: MyReview[];
   editRequests: MyEditRequest[];
   managerApps: MyManagerApp[];
+  saved: MySaved[];
   countries: { code: string; name: string }[];
   details: { country: string | null; age_group: string | null; gender: string | null };
   suspension: { reason: string | null } | null;
@@ -113,6 +123,7 @@ export function MyView({
             <p className="text-sm font-bold text-brand">{t.nav.activity}</p>
             <a href="#receipts" className={navLink}>{fill(t.nav.receipts, { n: receipts?.length ?? 0 })}</a>
             <a href="#reviews" className={navLink}>{fill(t.nav.reviews, { n: reviews?.length ?? 0 })}</a>
+            <a href="#saved" className={navLink}>{fill(dict.saved.myNav, { n: saved.length })}</a>
             <a href="#edits" className={navLink}>{fill(dict.edit.myNav, { n: editRequests.length })}</a>
             <a href="#managing" className={navLink}>{fill(dict.manager.myNav, { n: managerApps.length })}</a>
             <a href="#account" className={navLink}>{t.nav.account}</a>
@@ -232,6 +243,55 @@ export function MyView({
                         <DeleteReviewForm lang={lang} reviewId={r.id} label={t.reviews.delete} confirmText={t.reviews.deleteConfirm} />
                         <p className="text-xs text-muted">{suspension || r.hidden_at ? t.reviews.hidden : t.reviews.public}</p>
                       </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </section>
+
+          {/* Saved clinics */}
+          <section id="saved" className="scroll-mt-6 space-y-5">
+            <div className="space-y-2">
+              <h2 className="text-2xl font-bold leading-snug md:text-[28px]">{dict.saved.title}</h2>
+              <p className="text-sm text-muted">{dict.saved.subtitle}</p>
+            </div>
+            {saved.length === 0 ? (
+              <p className="text-sm text-muted">{dict.saved.empty}</p>
+            ) : (
+              <ul className="space-y-3">
+                {saved.map((s) => {
+                  const h = s.hospitals as unknown as {
+                    id: string;
+                    name: string;
+                    category: string | null;
+                    sido: string | null;
+                    sgg: string | null;
+                    closed_at: string | null;
+                  } | null;
+                  if (!h) return null;
+                  const line = categoryLine(h.category, h.sido, h.sgg);
+                  return (
+                    <li key={s.hospital_id} className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border bg-card p-5">
+                      <div className="min-w-0 space-y-1">
+                        <Link href={`/${lang}/hospitals/${h.id}`} className="text-[17px] font-bold leading-snug hover:text-brand">
+                          {h.name}
+                        </Link>
+                        {(line || h.closed_at) && (
+                          <p className="text-xs text-muted">
+                            {[line, h.closed_at && dict.saved.closed].filter(Boolean).join(" · ")}
+                          </p>
+                        )}
+                      </div>
+                      <SaveButton
+                        lang={lang}
+                        hospitalId={h.id}
+                        saved
+                        signedIn
+                        labels={{ save: dict.saved.save, saved: dict.saved.remove }}
+                        back={`/${lang}/my#saved`}
+                        removeOnly
+                      />
                     </li>
                   );
                 })}

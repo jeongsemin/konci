@@ -39,7 +39,7 @@ Next.js 16 서버 렌더링이 필요합니다(정적 내보내기 불가). 가�
   - Redirect URLs: `https://konci.kr/auth/callback` 추가
 - [ ] Google 로그인: Google Cloud Console의 OAuth 클라이언트에 승인된 리디렉션 URI로 Supabase 콜백 주소(`https://tkovpirqrbmshkiwfbsl.supabase.co/auth/v1/callback`)가 있는지 확인. 동의 화면을 "프로덕션"으로 게시하지 않으면 테스트 사용자만 로그인할 수 있다.
 - [ ] 이메일 로그인용 SMTP: Authentication > SMTP Settings에 메일 서비스를 연결한다. 기본 메일은 시간당 발송 한도가 작고 영어 템플릿이라 실서비스에 부적합하다. 연결 후 Authentication > Email Templates의 매직 링크 문구를 한국어·영어 등으로 고친다.
-- [ ] 마이그레이션 0001–0014가 모두 적용돼 있는지 확인. 0014(같은 영수증 재사용 차단)는 **코드를 배포하기 전에** 적용해야 영수증 업로드가 깨지지 않는다.
+- [ ] 마이그레이션 0001–0015가 모두 적용돼 있는지 확인. 0014(같은 영수증 재사용 차단)는 **코드를 배포하기 전에** 적용해야 영수증 업로드가 깨지지 않는다. 0015(관심 병원 저장)가 없으면 저장 버튼이 아무 일도 하지 않는다.
 - [ ] 관리자 계정이 지정돼 있는지 확인.
 
 ## 3-1. 방문 통계

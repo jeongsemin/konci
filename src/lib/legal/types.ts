@@ -14,7 +14,7 @@ export type LegalDoc = {
 };
 
 /** Date the current texts take effect (YYYY-MM-DD). Change it whenever the texts change. */
-export const LEGAL_EFFECTIVE_DATE = "2026-11-11";
+export const LEGAL_EFFECTIVE_DATE = "2026-11-12";
 
 /** Token replaced by the operator's contact address. */
 export const CONTACT_TOKEN = "{contact}";
