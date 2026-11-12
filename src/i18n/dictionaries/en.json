@@ -162,6 +162,8 @@
     "titleEmpty": "Search & compare clinics",
     "subtitle": "Your search conditions are kept. Order follows Naver Maps search results.",
     "filters": "Filters",
+    "filtersShow": "Show",
+    "filtersHide": "Hide",
     "apply": "Apply filters",
     "resetAll": "Reset all",
     "any": "Any",

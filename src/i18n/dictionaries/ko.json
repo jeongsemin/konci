@@ -162,6 +162,8 @@
     "titleEmpty": "병원 검색·비교",
     "subtitle": "선택한 검색 조건을 유지했어요. 순서는 네이버 지도 검색 결과를 기준으로 합니다.",
     "filters": "상세 필터",
+    "filtersShow": "펼치기",
+    "filtersHide": "접기",
     "apply": "필터 적용",
     "resetAll": "전체 초기화",
     "any": "전체",

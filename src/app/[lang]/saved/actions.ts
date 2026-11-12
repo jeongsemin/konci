@@ -21,4 +21,6 @@ export async function toggleSaved(form: FormData) {
   }
   revalidatePath(`/${input.lang}/hospitals/${input.hospitalId}`);
   revalidatePath(`/${input.lang}/my`);
+  // The page the button was on (a search, for instance), so it shows the new state.
+  revalidatePath(new URL(input.back, "http://localhost").pathname);
 }

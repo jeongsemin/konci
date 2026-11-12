@@ -162,6 +162,8 @@
     "titleEmpty": "搜索与比较诊所",
     "subtitle": "已保留你选择的搜索条件。排序依据 Naver 地图搜索结果。",
     "filters": "筛选条件",
+    "filtersShow": "展开",
+    "filtersHide": "收起",
     "apply": "应用筛选",
     "resetAll": "全部重置",
     "any": "不限",

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Check, ChevronLeft, ChevronRight, Info, MapPin, SlidersHorizontal, Square, SquareCheck, X } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Info, MapPin, Square, SquareCheck, X } from "lucide-react";
 import { hasLocale, type Locale } from "@/i18n/config";
 import { getDictionary, type Dictionary } from "@/i18n/dictionaries";
 import { searchHospitals, type SearchResult } from "@/lib/hospital-search";
@@ -26,6 +26,8 @@ import { SearchForm } from "@/components/search-form";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { treatmentByKo } from "@/lib/treatment-glossary";
+import { SaveButton } from "@/components/save-button";
+import { FilterPanel } from "@/components/filter-panel";
 
 const fill = (template: string, values: Record<string, string | number>) =>
   template.replace(/\{(\w+)\}/g, (_, key) => String(values[key] ?? ""));
@@ -85,6 +87,17 @@ export default async function SearchPage({ params, searchParams }: PageProps<"/[
   const results = outcome.results;
   const totalPages = Math.max(1, Math.ceil(outcome.total / PAGE_SIZE));
   const compare = await loadCompare(f.compare);
+
+  // Which of the shown clinics the member has saved (RLS returns only their own rows).
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getUser();
+  const savedIds = new Set<string>();
+  if (auth.user && results.length > 0) {
+    const { data: rows } = await supabase.from("saved_hospitals").select("hospital_id").in("hospital_id", results.map((r) => r.id));
+    for (const row of rows ?? []) savedIds.add(row.hospital_id);
+  }
+  // Saving from a result card comes back to this same search.
+  const here = `/${lang}/search${toQueryString(f)}`;
 
   // Changing a filter or the sort goes back to page 1; the compare links and the pager keep where you are.
   const href = (patch: Partial<Filters>) => `/${lang}/search${toQueryString({ ...f, page: 1, ...patch })}`;
@@ -171,14 +184,24 @@ export default async function SearchPage({ params, searchParams }: PageProps<"/[
           <div aria-live="polite" className="space-y-4">
             {!searched ? (
               <p className="text-sm text-muted">{t.prompt}</p>
-            ) : outcome.results.length === 0 && outcome.error ? (
+            ) : outcome.results.length === 0 && outcome.error === "db" ? (
+              // Only our own database failing is an error. Naver being unset or briefly down still searched
+              // the clinics we already have, so an empty list there just means nothing matched.
               <p className="text-sm text-error">{t.error}</p>
             ) : results.length === 0 ? (
               <p className="text-sm text-muted">{f.treatment && !treatmentSpec(f.treatment)?.derm ? t.emptyTreatment : t.empty}</p>
             ) : (
               <ul className="space-y-4">
                 {results.map((r) => (
-                  <ResultCard key={r.id} r={r} lang={lang} dict={dict} selected={f.compare.includes(r.id)} toggleHref={href({ compare: toggleCompare(f, r.id).compare, page: outcome.page })} />
+                  <ResultCard
+                    key={r.id}
+                    r={r}
+                    lang={lang}
+                    dict={dict}
+                    selected={f.compare.includes(r.id)}
+                    toggleHref={href({ compare: toggleCompare(f, r.id).compare, page: outcome.page })}
+                    save={{ saved: savedIds.has(r.id), signedIn: !!auth.user, back: here }}
+                  />
                 ))}
               </ul>
             )}
@@ -313,16 +336,13 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
 
 function FilterSidebar({ lang, dict, f }: { lang: Locale; dict: Dictionary; f: Filters }) {
   const t = dict.search;
+  const applied = [f.area, f.treatment, f.rating, f.reviews, f.english, f.director].filter(Boolean).length;
   return (
     <form action={`/${lang}/search`} className="space-y-6 lg:w-[200px]">
       <input type="hidden" name="q" value={f.q} />
       <input type="hidden" name="sort" value={f.sort} />
       <input type="hidden" name="compare" value={f.compare.join(",")} />
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold">{t.filters}</h2>
-        <SlidersHorizontal className="size-5" aria-hidden />
-      </div>
-
+      <FilterPanel title={t.filters} count={applied} labels={{ show: t.filtersShow, hide: t.filtersHide }}>
       <Group title={t.groups.area}>
         <Option type="radio" name="area" value="" checked={!f.area}>{t.any}</Option>
         {dict.home.areas.items.map((a) => (
@@ -356,11 +376,26 @@ function FilterSidebar({ lang, dict, f }: { lang: Locale; dict: Dictionary; f: F
         <Check className="size-4" aria-hidden />
         {t.apply}
       </button>
+      </FilterPanel>
     </form>
   );
 }
 
-function ResultCard({ r, lang, dict, selected, toggleHref }: { r: SearchResult; lang: Locale; dict: Dictionary; selected: boolean; toggleHref: string }) {
+function ResultCard({
+  r,
+  lang,
+  dict,
+  selected,
+  toggleHref,
+  save,
+}: {
+  r: SearchResult;
+  lang: Locale;
+  dict: Dictionary;
+  selected: boolean;
+  toggleHref: string;
+  save: { saved: boolean; signedIn: boolean; back: string };
+}) {
   const t = dict.search;
   const badges = [
     r.fluent_english_count > 0 && `${dict.hospital.englishFluent} ${r.fluent_english_count}`,
@@ -369,12 +404,19 @@ function ResultCard({ r, lang, dict, selected, toggleHref }: { r: SearchResult; 
   const kind = categoryLine(r.category, r.sido, r.sgg);
   return (
     <li className={`space-y-3 rounded-md border bg-card p-5 ${selected ? "border-brand" : "border-border"}`}>
-      {kind && <p className="text-[10px] font-bold text-brand">{kind}</p>}
-      <h2 className="text-[19px] font-bold leading-snug">
-        <Link href={`/${lang}/hospitals/${r.id}`} className="hover:text-brand">
-          {r.name}
-        </Link>
-      </h2>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 space-y-3">
+          {kind && <p className="text-[10px] font-bold text-brand">{kind}</p>}
+          <h2 className="text-[19px] font-bold leading-snug">
+            <Link href={`/${lang}/hospitals/${r.id}`} className="hover:text-brand">
+              {r.name}
+            </Link>
+          </h2>
+        </div>
+        <div className="shrink-0">
+          <SaveButton lang={lang} hospitalId={r.id} saved={save.saved} signedIn={save.signedIn} labels={dict.saved} back={save.back} />
+        </div>
+      </div>
       {namesLine(r) && <p className="text-xs text-muted">{namesLine(r)}</p>}
       <p className="text-xs">
         {r.review_count > 0 ? (

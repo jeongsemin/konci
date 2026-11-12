@@ -162,6 +162,8 @@
     "titleEmpty": "クリニック検索・比較",
     "subtitle": "選択した検索条件を保持しています。順序はNaverマップの検索結果に基づきます。",
     "filters": "詳細フィルター",
+    "filtersShow": "表示",
+    "filtersHide": "閉じる",
     "apply": "フィルターを適用",
     "resetAll": "すべてリセット",
     "any": "指定なし",
