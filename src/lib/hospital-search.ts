@@ -82,6 +82,11 @@ async function fromNaver(q: string, type: SearchType): Promise<{ items: NaverLoc
   const request = naverLocalRequest(process.env, query);
   if (!request) return { error: "not_configured" };
 
+  // The same words were asked recently: what Naver returned is already in the table.
+  const key = query.replace(/\s+/g, " ").toLowerCase();
+  const asked = naverAsked.get(key);
+  if (asked && Date.now() - asked < NAVER_TTL) return { items: [] };
+
   try {
     const res = await fetch(request.url, {
       headers: request.headers,
@@ -89,10 +94,27 @@ async function fromNaver(q: string, type: SearchType): Promise<{ items: NaverLoc
       cache: "no-store",
     });
     if (!res.ok) return { error: "upstream" };
-    return { items: ((await res.json()).items ?? []) as NaverLocalItem[] };
+    const items = ((await res.json()).items ?? []) as NaverLocalItem[];
+    remember(key);
+    return { items };
   } catch {
     return { error: "upstream" };
   }
+}
+
+/**
+ * Searches sent to Naver in the last day, on this server, so repeating one costs neither the wait
+ * nor the Naver quota. Only successful answers are kept; a failed one is asked again next time.
+ */
+const naverAsked = new Map<string, number>();
+const NAVER_TTL = 24 * 60 * 60 * 1000;
+const NAVER_KEEP = 5_000;
+
+function remember(key: string) {
+  naverAsked.delete(key);
+  naverAsked.set(key, Date.now());
+  // Maps keep insertion order, so the first key is the oldest.
+  while (naverAsked.size > NAVER_KEEP) naverAsked.delete(naverAsked.keys().next().value!);
 }
 
 /** About 300 m of latitude and longitude, to fetch the clinics near a Naver result. */
@@ -107,7 +129,8 @@ async function addFromNaver(candidates: HospitalCandidate[]): Promise<"db" | und
   if (candidates.length === 0) return;
   const admin = createAdminClient();
   const fresh: HospitalCandidate[] = [];
-  for (const c of candidates) {
+  // At most five results, looked up side by side.
+  const checks = await Promise.all(candidates.map(async (c): Promise<"db" | undefined> => {
     let near = admin.from("hospitals").select("id, external_id, name, road_address, lat, lng, naver_link");
     const road = roadKey(c.road_address);
     if (c.lat != null && c.lng != null) {
@@ -118,7 +141,7 @@ async function addFromNaver(candidates: HospitalCandidate[]): Promise<"db" | und
         .lte("lng", c.lng + NEAR.lng);
     } else if (road) {
       near = near.ilike("road_address", `%${road}%`);
-    } else continue; // Nowhere to place it: leave it out rather than risk a duplicate.
+    } else return; // Nowhere to place it: leave it out rather than risk a duplicate.
     // Around Gangnam station a few hundred metres can hold hundreds of clinics, so fetch them all.
     const { data, error } = await near.limit(1000);
     if (error) return "db";
@@ -127,7 +150,8 @@ async function addFromNaver(candidates: HospitalCandidate[]): Promise<"db" | und
     else if (!match.naver_link && c.naver_link) {
       await admin.from("hospitals").update({ naver_link: c.naver_link }).eq("id", match.id);
     }
-  }
+  }));
+  if (checks.includes("db")) return "db";
   if (fresh.length === 0) return;
   const { error } = await admin.from("hospitals").upsert(fresh, { onConflict: "external_id" });
   if (error) return "db";

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { externalId, isMedical, nameKey, naverLocalRequest, roadKey, sameClinic, toCandidate } from "../src/lib/naver-local.ts";
+import { externalId, isMedical, nameKey, naverLocalRequest, region, roadKey, sameClinic, toCandidate } from "../src/lib/naver-local.ts";
 
 const item = {
   title: "<b>서울</b>맑은피부과의원",
@@ -27,6 +27,13 @@ describe("naver local search parsing", () => {
   it("filters non-medical places", () => {
     assert.equal(isMedical(item), true);
     assert.equal(isMedical({ ...item, title: "맛있는 식당", category: "음식점>한식" }), false);
+  });
+  it("leaves out the kinds the site does not list", () => {
+    assert.equal(isMedical({ ...item, title: "바른한의원", category: "한의원" }), false);
+    assert.equal(isMedical({ ...item, title: "스마일치과의원", category: "병원,의원>치과" }), false);
+    assert.equal(isMedical({ ...item, title: "행복요양병원", category: "병원,의원>요양병원" }), false);
+    assert.equal(isMedical({ ...item, title: "24시 동물병원", category: "동물병원" }), false);
+    assert.equal(isMedical({ ...item, title: "데이뷰의원 강남점", category: "병원,의원>피부과" }), true);
   });
 });
 
@@ -60,6 +67,28 @@ describe("matching Naver results to clinics we have", () => {
     assert.equal(sameClinic({ ...naver, name: "다른피부과의원" }, hira), false);
     const busan = { name: "데이뷰의원", road_address: "부산광역시 부산진구 서면로 74", lat: 35.1572051, lng: 129.058155 };
     assert.equal(sameClinic(naver, busan), false);
+  });
+});
+
+describe("region of a Naver result", () => {
+  it("uses the HIRA forms the area filter reads", () => {
+    assert.deepEqual(region("서울특별시 강남구 봉은사로2길 29 B1층~5층"), { sido: "서울", sgg: "강남구" });
+    assert.deepEqual(region("경기도 고양시 덕양구 화중로 1"), { sido: "경기", sgg: "고양덕양구" });
+    assert.deepEqual(region("경기도 가평군 가평읍 1"), { sido: "경기", sgg: "가평군" });
+    assert.deepEqual(region("경기도 과천시 별양상가3로 1"), { sido: "경기", sgg: "과천시" });
+    assert.deepEqual(region("광주광역시 광산구 무진대로 1"), { sido: "전남광주", sgg: "광주광산구" });
+    assert.deepEqual(region("전라남도 목포시 영산로 1"), { sido: "전남광주", sgg: "목포시" });
+    assert.deepEqual(region("세종특별자치시 새롬중앙로 55"), { sido: "세종시", sgg: "세종시" });
+    assert.deepEqual(region("부산광역시 부산진구 서면로 74"), { sido: "부산", sgg: "부산진구" });
+  });
+  it("leaves it empty when the address is unknown", () => {
+    assert.deepEqual(region(""), { sido: null, sgg: null });
+    assert.deepEqual(region("Seoul Gangnam-gu"), { sido: null, sgg: null });
+  });
+  it("is set on the candidate", () => {
+    const c = toCandidate(item);
+    assert.equal(c.sido, "서울");
+    assert.equal(c.sgg, "강남구");
   });
 });
 

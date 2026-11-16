@@ -24,6 +24,8 @@ export type HospitalCandidate = {
   lng: number | null;
   naver_link: string | null;
   derm_listed: boolean;
+  sido: string | null;
+  sgg: string | null;
 };
 
 const stripTags = (s: string) =>
@@ -62,7 +64,49 @@ export function toCandidate(item: NaverLocalItem): HospitalCandidate {
     naver_link: item.link || null,
     // Naver files dermatology clinics under "…>피부과" whatever their name, so "피부과" searches find them.
     derm_listed: /피부과/.test(item.category),
+    // The area filter reads these, so they take the HIRA forms ("서울", "강남구").
+    ...region(item.roadAddress || item.address),
   };
+}
+
+// Province names in addresses, and the short forms the HIRA data (and so the area filter) uses.
+const SIDO: Record<string, string> = {
+  서울특별시: "서울",
+  부산광역시: "부산",
+  대구광역시: "대구",
+  인천광역시: "인천",
+  광주광역시: "전남광주",
+  전남광주통합특별시: "전남광주",
+  전라남도: "전남광주", // merged with 광주; the HIRA data files both under 전남광주
+  대전광역시: "대전",
+  울산광역시: "울산",
+  세종특별자치시: "세종시",
+  경기도: "경기",
+  강원특별자치도: "강원",
+  강원도: "강원",
+  충청북도: "충북",
+  충청남도: "충남",
+  전북특별자치도: "전북",
+  전라북도: "전북",
+  경상북도: "경북",
+  경상남도: "경남",
+  제주특별자치도: "제주",
+};
+
+/**
+ * The province and district of an address, as HIRA writes them: "서울특별시 강남구 …" gives 서울 / 강남구,
+ * "경기도 고양시 덕양구 …" gives 경기 / 고양덕양구, "광주광역시 광산구 …" gives 전남광주 / 광주광산구.
+ */
+export function region(address: string | null | undefined): { sido: string | null; sgg: string | null } {
+  const [first, second, third] = (address ?? "").trim().split(/\s+/);
+  const sido = first ? (SIDO[first] ?? null) : null;
+  if (!sido) return { sido: null, sgg: null };
+  if (sido === "세종시") return { sido, sgg: "세종시" };
+  if (!second || !/[시군구]$/.test(second)) return { sido, sgg: null };
+  let sgg = second;
+  if (/시$/.test(second) && third && /구$/.test(third)) sgg = second.slice(0, -1) + third;
+  else if ((first === "광주광역시" || first === "전남광주통합특별시") && /구$/.test(second)) sgg = `광주${second}`;
+  return { sido, sgg };
 }
 
 /**
@@ -108,9 +152,14 @@ export function sameClinic(a: Place, b: Place): boolean {
 
 const MEDICAL = /(병원|의원|피부|성형|클리닉|한의원|치과|의료|메디컬|medical|clinic|hospital)/i;
 
-/** Keep results that look like medical facilities. */
+// Kinds the site leaves out, as it does with the HIRA data (dental, oriental medicine, nursing), and vets.
+const LEFT_OUT = /(한의원|한방|치과|요양병원|요양원|동물병원|동물의료|애견|반려)/;
+
+/** Keep results that look like medical facilities of the kinds we list. */
 export function isMedical(item: NaverLocalItem): boolean {
-  return MEDICAL.test(item.category) || MEDICAL.test(stripTags(item.title));
+  const title = stripTags(item.title);
+  if (LEFT_OUT.test(item.category) || LEFT_OUT.test(title)) return false;
+  return MEDICAL.test(item.category) || MEDICAL.test(title);
 }
 
 /**
