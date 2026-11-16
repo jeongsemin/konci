@@ -1,8 +1,8 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { MEDICAL_TYPES } from "@/lib/hira";
-import { isMedical, toCandidate, type NaverLocalItem } from "@/lib/naver-local";
-import { PAGE_SIZE, areaSpec, searchTokens, treatmentSpec, type Sort } from "@/lib/search-params";
+import { isMedical, naverLocalRequest, toCandidate, type NaverLocalItem } from "@/lib/naver-local";
+import { PAGE_SIZE, areaSpec, interpretTokens, searchTokens, treatmentSpec, type Sort } from "@/lib/search-params";
 import { planSlices } from "@/lib/search-plan";
 
 export type SearchType = "all" | "derm";
@@ -63,24 +63,20 @@ const COLUMNS = "id, name, name_en, name_ja, name_zh, category, address, road_ad
  *  rest   the words are found in the name or the address
  * `all` is the single tier used when the order is chosen explicitly or there are no words (area only).
  */
-type Tier = "exact" | "prefix" | "name" | "rest" | "all";
+type Tier = "exact" | "prefix" | "name" | "rest" | "all" | "dermName" | "dermRest";
 const NAME_FIRST: Tier[] = ["exact", "prefix", "name", "rest"];
+// A plain "피부과" search: clinics named …피부과 (run by dermatologists) first, then the others listing dermatology.
+const DERM_FIRST: Tier[] = ["dermName", "dermRest"];
 
 async function fromNaver(q: string, type: SearchType): Promise<{ items: NaverLocalItem[] } | { error: "not_configured" | "upstream" }> {
-  const id = process.env.NAVER_SEARCH_CLIENT_ID;
-  const secret = process.env.NAVER_SEARCH_CLIENT_SECRET;
-  if (!id || !secret) return { error: "not_configured" };
-
   // Don't append the keyword twice if the user already typed it.
   const query = q.includes(KEYWORD[type]) ? q : `${q} ${KEYWORD[type]}`;
-  const url = new URL("https://openapi.naver.com/v1/search/local.json");
-  url.searchParams.set("query", query);
-  url.searchParams.set("display", "5"); // the API caps local search at 5 results
-  url.searchParams.set("sort", "comment");
+  const request = naverLocalRequest(process.env, query);
+  if (!request) return { error: "not_configured" };
 
   try {
-    const res = await fetch(url, {
-      headers: { "X-Naver-Client-Id": id, "X-Naver-Client-Secret": secret },
+    const res = await fetch(request.url, {
+      headers: request.headers,
       signal: AbortSignal.timeout(8_000),
       cache: "no-store",
     });
@@ -98,11 +94,14 @@ async function fromNaver(q: string, type: SearchType): Promise<{ items: NaverLoc
  */
 export async function searchHospitals(input: SearchInput): Promise<SearchOutcome> {
   const q = input.q.trim().slice(0, 50);
-  const spec = input.area ? areaSpec(input.area) : null;
-  const tokens = searchTokens(q);
+  // "강남 피부과" means the 강남 area and dermatology clinics, not clinics named "강남…피부과".
+  const words = interpretTokens(searchTokens(q));
+  const tokens = words.tokens;
+  const spec = input.area ? areaSpec(input.area) : words.area ? areaSpec(words.area) : null;
   const treatment = input.treatment ? treatmentSpec(input.treatment) : null;
+  const derm = words.derm && !treatment?.derm;
   const page = Math.max(1, input.page ?? 1);
-  if (tokens.length === 0 && !spec && !treatment) return { results: [], total: 0, page };
+  if (tokens.length === 0 && !spec && !treatment && !derm) return { results: [], total: 0, page };
 
   const admin = createAdminClient();
   let error: SearchOutcome["error"];
@@ -121,7 +120,7 @@ export async function searchHospitals(input: SearchInput): Promise<SearchOutcome
 
   const phrase = tokens.join(" ");
   const nameFirst = tokens.length > 0 && (input.sort ?? "relevance") === "relevance";
-  const tiers: Tier[] = nameFirst ? NAME_FIRST : ["all"];
+  const tiers: Tier[] = nameFirst ? NAME_FIRST : derm && (input.sort ?? "relevance") === "relevance" ? DERM_FIRST : ["all"];
 
   /** The hospitals of one tier that pass the filters, in the order they are shown. */
   const tierQuery = (tier: Tier, select: { count: "exact"; head: true } | { count: "exact" }) => {
@@ -150,6 +149,12 @@ export async function searchHospitals(input: SearchInput): Promise<SearchOutcome
         for (const word of tokens) query = query.or(`name.ilike.%${word}%,alt_names.ilike.%${word}%`);
         query = query.not("name", "ilike", `${phrase}%`).not("alt_names", "ilike", `${phrase}%`);
         break;
+      case "dermName":
+        query = query.ilike("name", "%피부과%");
+        break;
+      case "dermRest":
+        query = query.not("name", "ilike", "%피부과%");
+        break;
       case "rest":
       case "all":
         for (const word of tokens) {
@@ -166,6 +171,8 @@ export async function searchHospitals(input: SearchInput): Promise<SearchOutcome
       if (spec.dongs) query = query.or(spec.dongs.map((d) => `road_address.ilike.%${d}%`).join(","));
     }
     if (treatment?.derm) query = query.eq("derm_listed", true);
+    // Typed "피부과": clinics that list dermatology, plus any with 피부 in the name (Naver rows have no HIRA data).
+    if (derm) query = query.or("derm_listed.eq.true,name.ilike.%피부%");
     // treatments is the lower-cased text of the visible reviews' treatments (NULL when there are none).
     else if (treatment) query = query.or(treatment.keywords.map((k) => `treatments.ilike.%${k}%`).join(","));
     if (input.rating) query = query.gte("avg_rating", input.rating / 10);

@@ -149,6 +149,39 @@ export function searchTokens(q: string, max = 4): string[] {
     .slice(0, max);
 }
 
+/** Words that mean "a dermatology clinic", in the four languages (compared in lower case). */
+const DERM_WORDS = new Set(["피부과", "피부과의원", "피부", "dermatology", "dermatologist", "dermatologists", "皮膚科", "皮肤科"]);
+/** Words that name one of the filter areas. */
+const AREA_WORDS: Record<string, string> = {
+  강남: "강남",
+  강남구: "강남",
+  gangnam: "강남",
+  명동: "명동",
+  myeongdong: "명동",
+  홍대: "홍대",
+  hongdae: "홍대",
+  부산: "부산",
+  busan: "부산",
+};
+
+/**
+ * Reads the typed words like a person would: "피부과" asks for dermatology clinics (most of them don't
+ * have the word in their name) and "강남" asks for the area, so neither is matched against names.
+ * What is left is looked for in names and addresses as before.
+ */
+export function interpretTokens(tokens: string[]): { tokens: string[]; derm: boolean; area: string | null } {
+  let derm = false;
+  let area: string | null = null;
+  const rest: string[] = [];
+  for (const t of tokens) {
+    const word = t.toLowerCase();
+    if (DERM_WORDS.has(word)) derm = true;
+    else if (!area && Object.hasOwn(AREA_WORDS, word)) area = AREA_WORDS[word];
+    else rest.push(t);
+  }
+  return { tokens: rest, derm, area };
+}
+
 export function toggleCompare(f: Filters, id: string): Filters {
   const has = f.compare.includes(id);
   const compare = has ? f.compare.filter((x) => x !== id) : [...f.compare, id].slice(-MAX_COMPARE);

@@ -27,7 +27,8 @@ Next.js 16 서버 렌더링이 필요합니다(정적 내보내기 불가). 가�
 | `SUPABASE_SERVICE_ROLE_KEY` | 예 | 같은 화면의 service_role key (서버 전용, `NEXT_PUBLIC_` 붙이지 않기) |
 | `NEXT_PUBLIC_SITE_URL` | 예 | 실제 주소, `https://konci.kr` (끝에 `/` 없이) |
 | `NEXT_PUBLIC_CONTACT_EMAIL` | 예 | 약관·방침에 표시될 문의 메일 |
-| `NAVER_SEARCH_CLIENT_ID` / `_SECRET` | 선택 | 없으면 심평원 데이터만 검색 |
+| `NAVER_SEARCH_CLIENT_ID` / `_SECRET` | 선택 | 네이버 클라우드 플랫폼 **NAVER API HUB**에서 발급(개발자센터는 2026-07-31부터 검색 키 신규 발급 종료). 없으면 심평원 데이터만 검색 |
+| `NAVER_SEARCH_API` | 선택 | 예전 개발자센터 키를 쓸 때만 `legacy` (2027-06-30까지) |
 | `CLOVA_OCR_INVOKE_URL` / `_SECRET` | 선택 | 없으면 모든 영수증이 수동 심사 |
 
 `HIRA_SERVICE_KEY`는 본인 PC에서 병원 데이터를 가져올 때만 쓰므로 호스팅에는 넣지 않습니다.

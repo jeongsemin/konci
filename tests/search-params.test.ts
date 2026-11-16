@@ -7,6 +7,7 @@ import {
   areaSpec,
   composeQuery,
   displayQuery,
+  interpretTokens,
   pageWindow,
   parseParams,
   searchTokens,
@@ -171,5 +172,27 @@ describe("compare", () => {
     ]);
     assert.deepEqual(s, { total: 2, avgRating: 4.5, fluentEnglish: 1, interpreter: 0, director: 1, priceExplained: 1, noUpselling: 0 });
     assert.equal(aggregateReviews([]).avgRating, null);
+  });
+});
+
+describe("interpretTokens", () => {
+  it("reads 피부과 as dermatology and 강남 as the area, leaving other words for names", () => {
+    assert.deepEqual(interpretTokens(["강남", "피부과"]), { tokens: [], derm: true, area: "강남" });
+    assert.deepEqual(interpretTokens(["피부과"]), { tokens: [], derm: true, area: null });
+    assert.deepEqual(interpretTokens(["오라클", "피부과"]), { tokens: ["오라클"], derm: true, area: null });
+    assert.deepEqual(interpretTokens(["서울맑은"]), { tokens: ["서울맑은"], derm: false, area: null });
+  });
+
+  it("understands the other languages and area spellings", () => {
+    assert.equal(interpretTokens(["Dermatology"]).derm, true);
+    assert.equal(interpretTokens(["皮膚科"]).derm, true);
+    assert.equal(interpretTokens(["皮肤科"]).derm, true);
+    assert.equal(interpretTokens(["Gangnam"]).area, "강남");
+    assert.equal(interpretTokens(["강남구"]).area, "강남");
+    assert.equal(interpretTokens(["hongdae"]).area, "홍대");
+  });
+
+  it("keeps a second area word as a normal word", () => {
+    assert.deepEqual(interpretTokens(["강남", "부산"]), { tokens: ["부산"], derm: false, area: "강남" });
   });
 });

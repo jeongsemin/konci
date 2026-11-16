@@ -1,4 +1,4 @@
-// Parsing of the Naver Local Search API (openapi.naver.com/v1/search/local.json).
+// Naver local search (NAVER API HUB, or the legacy openapi.naver.com host): request building and parsing.
 // Pure helpers only; the network call lives in the route handler.
 import { createHash } from "node:crypto";
 
@@ -67,4 +67,28 @@ const MEDICAL = /(병원|의원|피부|성형|클리닉|한의원|치과|의료|
 /** Keep results that look like medical facilities. */
 export function isMedical(item: NaverLocalItem): boolean {
   return MEDICAL.test(item.category) || MEDICAL.test(stripTags(item.title));
+}
+
+/**
+ * Where and how to call Naver local search. New keys come only from NAVER API HUB (Naver Cloud
+ * Platform) since the Developers Center stopped issuing search keys on 2026-07-31; old Developers
+ * Center keys keep working on the legacy host until 2027-06-30. Both take the same query and return
+ * the same items. Returns null when no keys are set.
+ */
+export function naverLocalRequest(
+  env: Record<string, string | undefined>,
+  query: string,
+): { url: string; headers: Record<string, string> } | null {
+  const id = env.NAVER_SEARCH_CLIENT_ID?.trim();
+  const secret = env.NAVER_SEARCH_CLIENT_SECRET?.trim();
+  if (!id || !secret) return null;
+  const legacy = env.NAVER_SEARCH_API?.trim().toLowerCase() === "legacy";
+  const url = new URL(legacy ? "https://openapi.naver.com/v1/search/local.json" : "https://naverapihub.apigw.ntruss.com/search/v1/local");
+  url.searchParams.set("query", query);
+  url.searchParams.set("display", "5"); // local search returns at most 5 results
+  url.searchParams.set("sort", "comment");
+  const headers: Record<string, string> = legacy
+    ? { "X-Naver-Client-Id": id, "X-Naver-Client-Secret": secret }
+    : { "X-NCP-APIGW-API-KEY-ID": id, "X-NCP-APIGW-API-KEY": secret };
+  return { url: url.toString(), headers };
 }
