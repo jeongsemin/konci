@@ -76,7 +76,7 @@ const NAME_FIRST: Tier[] = ["exact", "prefix", "name", "rest"];
 // A plain "피부과" search: clinics named …피부과 (run by dermatologists) first, then the others listing dermatology.
 const DERM_FIRST: Tier[] = ["dermName", "dermRest"];
 
-async function fromNaver(q: string, type: SearchType): Promise<{ items: NaverLocalItem[] } | { error: "not_configured" | "upstream" }> {
+async function fromNaver(q: string, type: SearchType): Promise<{ items: NaverLocalItem[]; key?: string } | { error: "not_configured" | "upstream" }> {
   // Don't append the keyword twice if the user already typed it.
   const query = q.includes(KEYWORD[type]) ? q : `${q} ${KEYWORD[type]}`;
   const request = naverLocalRequest(process.env, query);
@@ -95,8 +95,8 @@ async function fromNaver(q: string, type: SearchType): Promise<{ items: NaverLoc
     });
     if (!res.ok) return { error: "upstream" };
     const items = ((await res.json()).items ?? []) as NaverLocalItem[];
-    remember(key);
-    return { items };
+    // Remembered by the caller once the results are saved, so a failed save is tried again.
+    return { items, key };
   } catch {
     return { error: "upstream" };
   }
@@ -104,7 +104,8 @@ async function fromNaver(q: string, type: SearchType): Promise<{ items: NaverLoc
 
 /**
  * Searches sent to Naver in the last day, on this server, so repeating one costs neither the wait
- * nor the Naver quota. Only successful answers are kept; a failed one is asked again next time.
+ * nor the Naver quota. A search is kept only once Naver answered and the results were saved;
+ * if either failed, it is asked again next time.
  */
 const naverAsked = new Map<string, number>();
 const NAVER_TTL = 24 * 60 * 60 * 1000;
@@ -179,9 +180,8 @@ export async function searchHospitals(input: SearchInput): Promise<SearchOutcome
   if (q && page === 1) {
     const naver = await fromNaver(input.area && !spec ? q : [input.area, q].filter(Boolean).join(" "), input.type);
     if ("error" in naver) error = naver.error;
-    else {
-      if ((await addFromNaver(naver.items.filter(isMedical).map(toCandidate))) === "db") error = "db";
-    }
+    else if ((await addFromNaver(naver.items.filter(isMedical).map(toCandidate))) === "db") error = "db";
+    else if (naver.key) remember(naver.key);
   }
 
   const phrase = tokens.join(" ");
