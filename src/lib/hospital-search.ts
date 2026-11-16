@@ -1,7 +1,15 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { MEDICAL_TYPES } from "@/lib/hira";
-import { isMedical, naverLocalRequest, toCandidate, type NaverLocalItem } from "@/lib/naver-local";
+import {
+  isMedical,
+  naverLocalRequest,
+  roadKey,
+  sameClinic,
+  toCandidate,
+  type HospitalCandidate,
+  type NaverLocalItem,
+} from "@/lib/naver-local";
 import { PAGE_SIZE, areaSpec, interpretTokens, searchTokens, treatmentSpec, type Sort } from "@/lib/search-params";
 import { planSlices } from "@/lib/search-plan";
 
@@ -87,6 +95,44 @@ async function fromNaver(q: string, type: SearchType): Promise<{ items: NaverLoc
   }
 }
 
+/** About 300 m of latitude and longitude, to fetch the clinics near a Naver result. */
+const NEAR = { lat: 0.003, lng: 0.004 };
+
+/**
+ * Adds the Naver results we don't have yet. A clinic already in the table (usually from the HIRA data,
+ * often under a slightly different name such as "데이뷰의원" for "데이뷰의원 강남점") is not added again;
+ * it only gets the Naver link when it has none.
+ */
+async function addFromNaver(candidates: HospitalCandidate[]): Promise<"db" | undefined> {
+  if (candidates.length === 0) return;
+  const admin = createAdminClient();
+  const fresh: HospitalCandidate[] = [];
+  for (const c of candidates) {
+    let near = admin.from("hospitals").select("id, external_id, name, road_address, lat, lng, naver_link");
+    const road = roadKey(c.road_address);
+    if (c.lat != null && c.lng != null) {
+      near = near
+        .gte("lat", c.lat - NEAR.lat)
+        .lte("lat", c.lat + NEAR.lat)
+        .gte("lng", c.lng - NEAR.lng)
+        .lte("lng", c.lng + NEAR.lng);
+    } else if (road) {
+      near = near.ilike("road_address", `%${road}%`);
+    } else continue; // Nowhere to place it: leave it out rather than risk a duplicate.
+    // Around Gangnam station a few hundred metres can hold hundreds of clinics, so fetch them all.
+    const { data, error } = await near.limit(1000);
+    if (error) return "db";
+    const match = (data ?? []).find((h) => h.external_id !== c.external_id && sameClinic(c, h));
+    if (!match) fresh.push(c);
+    else if (!match.naver_link && c.naver_link) {
+      await admin.from("hospitals").update({ naver_link: c.naver_link }).eq("id", match.id);
+    }
+  }
+  if (fresh.length === 0) return;
+  const { error } = await admin.from("hospitals").upsert(fresh, { onConflict: "external_id" });
+  if (error) return "db";
+}
+
 /**
  * Looks hospitals up in our own table (filled from the HIRA public data), one page at a time.
  * On the first page it also asks Naver and adds any medical hits it returns to the table,
@@ -110,11 +156,7 @@ export async function searchHospitals(input: SearchInput): Promise<SearchOutcome
     const naver = await fromNaver(input.area && !spec ? q : [input.area, q].filter(Boolean).join(" "), input.type);
     if ("error" in naver) error = naver.error;
     else {
-      const candidates = naver.items.filter(isMedical).map(toCandidate);
-      if (candidates.length > 0) {
-        const { error: dbError } = await admin.from("hospitals").upsert(candidates, { onConflict: "external_id" });
-        if (dbError) error = "db";
-      }
+      if ((await addFromNaver(naver.items.filter(isMedical).map(toCandidate))) === "db") error = "db";
     }
   }
 

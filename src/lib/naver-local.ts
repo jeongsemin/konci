@@ -23,6 +23,7 @@ export type HospitalCandidate = {
   lat: number | null;
   lng: number | null;
   naver_link: string | null;
+  derm_listed: boolean;
 };
 
 const stripTags = (s: string) =>
@@ -59,7 +60,50 @@ export function toCandidate(item: NaverLocalItem): HospitalCandidate {
     lat: coord(item.mapy, 1e7),
     lng: coord(item.mapx, 1e7),
     naver_link: item.link || null,
+    // Naver files dermatology clinics under "…>피부과" whatever their name, so "피부과" searches find them.
+    derm_listed: /피부과/.test(item.category),
   };
+}
+
+/**
+ * A clinic name without spaces, brackets or the branch after it: "데이뷰의원 강남점" and "데이뷰의원"
+ * give "데이뷰의원", "오라클피부과의원" and "오라클 피부과 신사점" give "오라클피부과".
+ */
+export function nameKey(name: string): string {
+  const flat = name.replace(/\(.*?\)|\[.*?\]/g, "").replace(/\s+/g, "").toLowerCase();
+  const end = flat.search(/피부과|성형외과|의원|병원|클리닉|clinic/);
+  if (end < 0) return flat;
+  const suffix = flat.slice(end).match(/^(피부과|성형외과|의원|병원|클리닉|clinic)/)![0];
+  return flat.slice(0, end + suffix.length);
+}
+
+/** The road and building number of a road address: "서울특별시 강남구 강남대로 494, 2층" gives "강남대로 494". */
+export function roadKey(address: string | null | undefined): string | null {
+  const m = address?.match(/([가-힣A-Za-z0-9.]+(?:로|길))\s*(\d+(?:-\d+)?)/);
+  return m ? `${m[1]} ${m[2]}` : null;
+}
+
+/** Metres between two points (close enough for the few hundred metres compared here). */
+function distance(a: { lat: number; lng: number }, b: { lat: number; lng: number }): number {
+  const dy = (a.lat - b.lat) * 111_320;
+  const dx = (a.lng - b.lng) * 111_320 * Math.cos((a.lat * Math.PI) / 180);
+  return Math.hypot(dx, dy);
+}
+
+type Place = { name: string; road_address: string | null; lat: number | null; lng: number | null };
+
+/**
+ * Whether a Naver result is a clinic we already have: the same name (branch left aside) at the same
+ * road address, or within 150 m. Two different clinics in one building keep their different names.
+ */
+export function sameClinic(a: Place, b: Place): boolean {
+  if (nameKey(a.name) !== nameKey(b.name)) return false;
+  const ra = roadKey(a.road_address);
+  if (ra && ra === roadKey(b.road_address)) return true;
+  if (a.lat != null && a.lng != null && b.lat != null && b.lng != null) {
+    return distance({ lat: a.lat, lng: a.lng }, { lat: b.lat, lng: b.lng }) < 150;
+  }
+  return false;
 }
 
 const MEDICAL = /(병원|의원|피부|성형|클리닉|한의원|치과|의료|메디컬|medical|clinic|hospital)/i;
