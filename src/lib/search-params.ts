@@ -150,19 +150,34 @@ export function searchTokens(q: string, max = 4): string[] {
 }
 
 /** Words that mean "a dermatology clinic", in the four languages (compared in lower case). */
-const DERM_WORDS = new Set(["피부과", "피부과의원", "피부", "dermatology", "dermatologist", "dermatologists", "皮膚科", "皮肤科"]);
-/** Words that name one of the filter areas. */
+const DERM_WORDS = new Set([
+  "피부과", "피부과의원", "피부",
+  "dermatology", "dermatologist", "dermatologists",
+  "皮膚科", "皮膚科医院", "皮膚科クリニック", "皮膚",
+  "皮肤科", "皮肤科医院", "皮肤科诊所", "皮肤",
+]);
+/** Words that name one of the filter areas: Korean, English, Japanese (kanji and katakana) and Chinese. */
 const AREA_WORDS: Record<string, string> = {
-  강남: "강남",
-  강남구: "강남",
-  gangnam: "강남",
-  명동: "명동",
-  myeongdong: "명동",
-  홍대: "홍대",
-  hongdae: "홍대",
-  부산: "부산",
-  busan: "부산",
+  강남: "강남", 강남구: "강남", gangnam: "강남", "gangnam-gu": "강남", 江南: "강남", 江南区: "강남", 江南區: "강남", カンナム: "강남",
+  명동: "명동", myeongdong: "명동", 明洞: "명동", ミョンドン: "명동",
+  홍대: "홍대", hongdae: "홍대", 弘大: "홍대", 弘益大学: "홍대", 弘益大學: "홍대", ホンデ: "홍대",
+  부산: "부산", busan: "부산", 釜山: "부산", プサン: "부산",
 };
+// Longest first, so "江南区皮膚科" is read as 江南区 + 皮膚科, not 江南 + 区皮膚科.
+const AREA_KEYS = Object.keys(AREA_WORDS).sort((a, b) => b.length - a.length);
+
+/**
+ * Japanese and Chinese are often typed without spaces ("江南皮膚科"), and Korean sometimes too
+ * ("강남피부과"): an area word followed by a dermatology word is read as the two.
+ */
+function splitCompound(word: string): { area: string; derm: boolean } | null {
+  for (const key of AREA_KEYS) {
+    if (word.length > key.length && word.startsWith(key) && DERM_WORDS.has(word.slice(key.length))) {
+      return { area: AREA_WORDS[key], derm: true };
+    }
+  }
+  return null;
+}
 
 /**
  * Reads the typed words like a person would: "피부과" asks for dermatology clinics (most of them don't
@@ -175,9 +190,13 @@ export function interpretTokens(tokens: string[]): { tokens: string[]; derm: boo
   const rest: string[] = [];
   for (const t of tokens) {
     const word = t.toLowerCase();
+    const compound: ReturnType<typeof splitCompound> = area ? null : splitCompound(word);
     if (DERM_WORDS.has(word)) derm = true;
     else if (!area && Object.hasOwn(AREA_WORDS, word)) area = AREA_WORDS[word];
-    else rest.push(t);
+    else if (compound) {
+      area = compound.area;
+      derm = true;
+    } else rest.push(t);
   }
   return { tokens: rest, derm, area };
 }

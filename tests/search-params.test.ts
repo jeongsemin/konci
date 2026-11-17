@@ -192,6 +192,28 @@ describe("interpretTokens", () => {
     assert.equal(interpretTokens(["hongdae"]).area, "홍대");
   });
 
+  it("understands Japanese and Chinese area names", () => {
+    assert.deepEqual(interpretTokens(["江南", "皮膚科"]), { tokens: [], derm: true, area: "강남" });
+    assert.deepEqual(interpretTokens(["江南", "皮肤科"]), { tokens: [], derm: true, area: "강남" });
+    assert.equal(interpretTokens(["カンナム"]).area, "강남");
+    assert.equal(interpretTokens(["江南区"]).area, "강남");
+    assert.equal(interpretTokens(["明洞"]).area, "명동");
+    assert.equal(interpretTokens(["ミョンドン"]).area, "명동");
+    assert.equal(interpretTokens(["弘大"]).area, "홍대");
+    assert.equal(interpretTokens(["ホンデ"]).area, "홍대");
+    assert.equal(interpretTokens(["釜山"]).area, "부산");
+    assert.equal(interpretTokens(["プサン"]).area, "부산");
+  });
+
+  it("splits an area and dermatology typed without a space", () => {
+    assert.deepEqual(interpretTokens(["江南皮膚科"]), { tokens: [], derm: true, area: "강남" });
+    assert.deepEqual(interpretTokens(["江南区皮肤科"]), { tokens: [], derm: true, area: "강남" });
+    assert.deepEqual(interpretTokens(["カンナム皮膚科"]), { tokens: [], derm: true, area: "강남" });
+    assert.deepEqual(interpretTokens(["강남피부과"]), { tokens: [], derm: true, area: "강남" });
+    // A clinic name that only starts like an area stays a name.
+    assert.deepEqual(interpretTokens(["강남삼성드림이비인후과의원"]), { tokens: ["강남삼성드림이비인후과의원"], derm: false, area: null });
+  });
+
   it("keeps a second area word as a normal word", () => {
     assert.deepEqual(interpretTokens(["강남", "부산"]), { tokens: ["부산"], derm: false, area: "강남" });
   });
