@@ -1025,7 +1025,7 @@
       "."
     ],
     "receiptConsent": [
-      "I agree that my receipt image is read by a text-recognition service and handled as described in the ",
+      "I agree that my receipt image is checked by an administrator and handled as described in the ",
       "."
     ],
     "consentRequired": "Please agree to the receipt processing first.",

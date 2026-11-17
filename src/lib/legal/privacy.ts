@@ -24,7 +24,7 @@ const ko: LegalDoc = {
       heading: "2. 이용 목적",
       items: [
         "회원 식별과 로그인 유지, 부정 이용 방지",
-        "영수증으로 실제 방문을 확인하고 후기를 게시하기 위한 검증(자동 판독 후, 필요하면 관리자가 확인)",
+        "영수증으로 실제 방문을 확인하고 후기를 게시하기 위한 검증(관리자가 영수증을 직접 확인)",
         "후기·병원 정보의 게시, 병원별 평점 집계",
         "신고와 수정 요청의 처리, 병원 관리자 자격 확인",
         "서비스 개선을 위한 통계(개인을 식별할 수 없는 형태)",
@@ -34,7 +34,7 @@ const ko: LegalDoc = {
     {
       heading: "3. 영수증 등 민감한 정보의 처리",
       paragraphs: [
-        "영수증 사진은 비공개 저장소에 보관되며 다른 이용자에게 공개되지 않습니다. 후기 검증을 위해 영수증 문자 인식(OCR)을 하며, 이 과정에서 영수증 이미지가 아래 \"처리 위탁\"의 업체로 전송됩니다.",
+        "영수증 사진은 비공개 저장소에 보관되며 다른 이용자에게 공개되지 않습니다. 후기 검증을 위해 관리자가 영수증 사진을 직접 확인합니다.",
         "영수증에 진료 내역이 포함되어 있을 수 있으므로, 영수증을 올리기 전에 이 처리에 동의하는지 확인합니다. 동의하지 않으면 영수증 인증이 필요한 후기는 쓸 수 없으며, 그 밖의 서비스는 그대로 이용할 수 있습니다. 주민등록번호, 카드 번호 등은 가리고 올리시길 권합니다.",
       ],
     },
@@ -69,7 +69,6 @@ const ko: LegalDoc = {
       items: [
         "Supabase Inc.: 회원 인증, 데이터베이스와 파일(영수증 이미지 등) 저장",
         "Google LLC: 로그인(Google 계정 인증)",
-        "네이버클라우드(NAVER Cloud) CLOVA OCR: 영수증 문자 인식",
         "웹 호스팅 사업자: 서비스 서버 운영(배포 후 확정되는 대로 이 항목에 기재합니다)",
         "이전 항목은 위 각 업체에 맡기는 정보와 같으며, 이전 시기와 방법은 서비스 이용 시 네트워크를 통한 전송입니다. 국외 이전을 원하지 않으면 서비스 이용을 중단하고 탈퇴를 요청할 수 있습니다.",
       ],
@@ -133,7 +132,7 @@ const en: LegalDoc = {
       heading: "2. Why we use it",
       items: [
         "To identify members, keep you signed in and prevent misuse",
-        "To confirm that a visit really happened through the receipt before a review is published (automatic reading first, then an administrator if needed)",
+        "To confirm that a visit really happened through the receipt before a review is published (an administrator checks the receipt)",
         "To publish reviews and clinic information and to calculate clinic ratings",
         "To handle reports and correction requests and to check clinic manager eligibility",
         "To improve the Service with statistics that do not identify you",
@@ -143,7 +142,7 @@ const en: LegalDoc = {
     {
       heading: "3. Receipts and other sensitive information",
       paragraphs: [
-        "Receipt photos are stored privately and are never shown to other users. To verify a review we read the receipt with optical character recognition (OCR), which sends the receipt image to the provider listed under \"Processors\" below.",
+        "Receipt photos are stored privately and are never shown to other users. To verify a review, an administrator looks at the receipt photo.",
         "A receipt may show your treatment, so we ask for your consent before you upload one. If you do not agree you cannot write a receipt-verified review, but you can still use the rest of the Service. Please cover national ID numbers, card numbers and similar details before uploading.",
       ],
     },
@@ -174,7 +173,6 @@ const en: LegalDoc = {
       items: [
         "Supabase Inc.: sign-in, database and file storage (including receipt images)",
         "Google LLC: sign-in (Google account authentication)",
-        "NAVER Cloud CLOVA OCR: reading receipts",
         "Web hosting provider: running the Service (this entry will be completed once hosting is finalized)",
         "The information transferred is what is listed for each company above, sent over the network when you use the Service. If you do not want your information handled abroad, stop using the Service and ask us to delete your account.",
       ],
@@ -236,7 +234,7 @@ const ja: LegalDoc = {
       heading: "2. 利用目的",
       items: [
         "会員の識別、ログイン状態の維持、不正利用の防止",
-        "領収書による実際の受診の確認と口コミ掲載のための検証(自動読み取りの後、必要に応じて管理者が確認)",
+        "領収書による実際の受診の確認と口コミ掲載のための検証(管理者が領収書を直接確認)",
         "口コミ・医療機関情報の掲載と、医療機関ごとの評価の集計",
         "通報・修正リクエストの処理、医療機関管理者の資格確認",
         "個人を特定できない形での統計によるサービス改善",
@@ -246,7 +244,7 @@ const ja: LegalDoc = {
     {
       heading: "3. 領収書などセンシティブな情報の扱い",
       paragraphs: [
-        "領収書の写真は非公開のストレージに保管され、他の利用者には表示されません。口コミの検証のため文字認識(OCR)を行い、その際、領収書の画像が下記「処理の委託」の事業者に送信されます。",
+        "領収書の写真は非公開のストレージに保管され、他の利用者には表示されません。口コミの検証のため、管理者が領収書の写真を直接確認します。",
         "領収書には診療内容が含まれることがあるため、アップロード前にこの処理への同意をお願いしています。同意されない場合、領収書認証が必要な口コミは書けませんが、その他の機能は引き続き利用できます。マイナンバー相当の番号やカード番号などは隠してアップロードすることをおすすめします。",
       ],
     },
@@ -277,7 +275,6 @@ const ja: LegalDoc = {
       items: [
         "Supabase Inc.:会員認証、データベースとファイル(領収書画像など)の保管",
         "Google LLC:ログイン(Googleアカウント認証)",
-        "NAVER Cloud CLOVA OCR:領収書の文字認識",
         "Webホスティング事業者:サービスサーバーの運営(確定次第、この項目に記載します)",
         "移転される情報は上記各社に委ねる情報と同じで、サービス利用時にネットワークを通じて送信されます。国外での取り扱いを望まない場合は、利用を中止し、退会を依頼してください。",
       ],
@@ -339,7 +336,7 @@ const zh: LegalDoc = {
       heading: "2. 使用目的",
       items: [
         "识别会员、保持登录状态、防止滥用",
-        "通过收据确认确实到访,并在发布评价前进行核验(先自动识别,必要时由管理员确认)",
+        "通过收据确认确实到访,并在发布评价前进行核验(由管理员直接查看收据)",
         "发布评价和医院信息,统计各医院的评分",
         "处理举报和更正请求,确认医院管理员资格",
         "以无法识别个人的统计数据改进服务",
@@ -349,7 +346,7 @@ const zh: LegalDoc = {
     {
       heading: "3. 收据等敏感信息的处理",
       paragraphs: [
-        "收据照片保存在非公开的存储中,不会向其他用户显示。为核验评价,我们会对收据进行文字识别(OCR),此过程中收据图片会发送给下文“委托处理”中列出的服务商。",
+        "收据照片保存在非公开的存储中,不会向其他用户显示。为核验评价,管理员会直接查看收据照片。",
         "收据可能包含诊疗内容,因此在您上传前会征求您对该处理的同意。如不同意,则无法撰写需要收据认证的评价,但仍可使用其他功能。建议上传前遮盖身份证号、银行卡号等信息。",
       ],
     },
@@ -380,7 +377,6 @@ const zh: LegalDoc = {
       items: [
         "Supabase Inc.:会员认证、数据库与文件(含收据图片)存储",
         "Google LLC:登录(Google 账号认证)",
-        "NAVER Cloud CLOVA OCR:收据文字识别",
         "网站托管服务商:运行服务器(托管确定后会在此补充)",
         "传输的信息与上述各公司所处理的信息相同,在您使用本服务时通过网络传送。如不希望信息在境外处理,请停止使用并要求注销账号。",
       ],
