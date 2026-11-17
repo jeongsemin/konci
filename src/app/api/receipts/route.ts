@@ -1,10 +1,11 @@
 import { createHash } from "node:crypto";
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, after, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { readReceipt } from "@/lib/clova-ocr";
 import { isAcceptableSize, sniffImage } from "@/lib/receipt-file";
 import { canReuseHash } from "@/lib/receipt-retention";
+import { ALERT_WINDOW_MS, alertConfigured, sendReceiptAlert, shouldAlert } from "@/lib/receipt-alert";
 import { decideReceipt, receiptContentKey } from "@/lib/receipt-verify";
 
 const DAILY_LIMIT = 10;
@@ -98,6 +99,19 @@ export async function POST(request: NextRequest) {
   if (error || !receipt) {
     await admin.storage.from("receipts").remove([storagePath]);
     return NextResponse.json({ error: error?.code === "23505" ? "duplicate" : "generic" }, { status: 500 });
+  }
+
+  if (receipt.status === "pending" && alertConfigured()) {
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || request.nextUrl.origin;
+    after(async () => {
+      const hourAgo = new Date(Date.now() - ALERT_WINDOW_MS).toISOString();
+      const [{ count: recent }, { count: pending }] = await Promise.all([
+        admin.from("receipts").select("id", { count: "exact", head: true }).eq("status", "pending").gte("created_at", hourAgo).neq("id", receipt.id),
+        admin.from("receipts").select("id", { count: "exact", head: true }).eq("status", "pending"),
+      ]);
+      if (recent === null || !shouldAlert(recent)) return;
+      await sendReceiptAlert({ hospitalName: hospital.name, pending: pending ?? 1, siteUrl });
+    });
   }
 
   return NextResponse.json({ id: receipt.id, status: receipt.status, reasons });

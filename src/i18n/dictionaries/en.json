@@ -86,8 +86,8 @@
           "a": "No. Receipts are stored privately and used only for verification."
         },
         {
-          "q": "What if automatic verification fails?",
-          "a": "Your receipt goes to a manual review queue. You can write your review once it is approved."
+          "q": "Who checks my receipt?",
+          "a": "An administrator checks it, usually within 1–2 days. You can write your review once it is approved."
         }
       ]
     },
@@ -372,7 +372,7 @@
     "upload": "Verify receipt",
     "uploading": "Checking your receipt…",
     "status": {
-      "pending": "Under manual review. You can write your review once it is approved.",
+      "pending": "An administrator is checking it, usually within 1–2 days. You can write your review once it is approved.",
       "auto_approved": "Receipt verified automatically. You can write your review.",
       "approved": "Receipt approved. You can write your review.",
       "rejected": "Receipt rejected."
@@ -532,7 +532,7 @@
   "admin": {
     "breadcrumb": "Admin",
     "title": "Receipt review queue",
-    "subtitle": "Review receipts that weren't verified automatically and approve or reject them. The rejection reason is shown to the user.",
+    "subtitle": "Check uploaded receipts and approve or reject them. The rejection reason is shown to the user.",
     "stats": {
       "pending": "Awaiting review",
       "autoApproved": "Auto-verified",

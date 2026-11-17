@@ -56,6 +56,7 @@ npm run dev                  # http://localhost:3000
 | `HIRA_SERVICE_KEY` / `HIRA_DETAIL_SERVICE_KEY` | 적재 시 | 공공데이터포털 병원정보·상세정보 서비스 일반 인증키(Decoding). 적재 스크립트만 씁니다 |
 | `NAVER_SEARCH_CLIENT_ID` / `NAVER_SEARCH_CLIENT_SECRET` | 선택 | 없으면 DB에 적재된 병원만 검색됩니다 |
 | `CLOVA_OCR_INVOKE_URL` / `CLOVA_OCR_SECRET` | 선택 | 없으면 모든 영수증이 수동 검토로 넘어갑니다 |
+| `RESEND_API_KEY` / `ALERT_EMAIL_TO` / `ALERT_EMAIL_FROM` | 선택 | 검토할 영수증이 올라오면 관리자에게 메일을 보냅니다(한 시간에 한 번까지). 받는 주소는 쉼표로 여러 개. 보내는 주소는 Resend에서 도메인을 인증한 뒤 설정하며, 없으면 Resend 가입 주소로만 보낼 수 있습니다 |
 | `NEXT_PUBLIC_SITE_URL` | 배포 시 | canonical·사이트맵 기준 주소 (기본 `http://localhost:3000`) |
 | `NEXT_PUBLIC_CONTACT_EMAIL` | 배포 시 | 약관·방침에 표시되는 문의 연락처 (없으면 자리표시 주소) |
 
