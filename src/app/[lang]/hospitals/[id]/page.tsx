@@ -197,7 +197,7 @@ export default async function HospitalPage({ params, searchParams }: PageProps<"
           {/* Clinic info */}
           <section id="info" className="scroll-mt-6 space-y-5">
             <div className="space-y-2">
-              <p className="text-[11px] font-bold text-brand">{t.infoEyebrow}</p>
+              <p className="text-[11px] font-bold text-brand">{hospital.source === "hira" ? t.infoEyebrowHira : t.infoEyebrow}</p>
               <h2 className="text-2xl font-bold leading-snug md:text-[30px]">{t.infoTitle}</h2>
               <p className="text-sm text-muted">{t.infoSubtitle}</p>
             </div>
@@ -464,7 +464,8 @@ export default async function HospitalPage({ params, searchParams }: PageProps<"
             <Info className="size-5 shrink-0 text-brand" aria-hidden />
             <div className="space-y-1">
               <p className="text-sm font-bold text-brand">{t.sourceTitle}</p>
-              <p className="text-xs leading-relaxed text-muted">{t.sourceBody}</p>
+              {/* Most clinics come from the HIRA public data; a few were added from Naver search. */}
+              <p className="text-xs leading-relaxed text-muted">{hospital.source === "hira" ? t.sourceBodyHira : t.sourceBody}</p>
             </div>
           </div>
         </aside>

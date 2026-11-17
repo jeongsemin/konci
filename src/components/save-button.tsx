@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Bookmark, BookmarkCheck } from "lucide-react";
 import type { Locale } from "@/i18n/config";
 import { toggleSaved } from "@/app/[lang]/saved/actions";
+import { SaveSubmit } from "./save-submit";
 
 const style =
   "flex min-h-10 items-center gap-1.5 rounded-full border px-4 text-sm font-bold";
@@ -43,14 +44,13 @@ export function SaveButton({
       <input type="hidden" name="lang" value={lang} />
       <input type="hidden" name="back" value={here} />
       <input type="hidden" name="intent" value={saved ? "remove" : "save"} />
-      <button
-        type="submit"
-        aria-pressed={removeOnly ? undefined : saved}
+      <SaveSubmit
+        pressed={removeOnly ? undefined : saved}
         className={`${style} ${saved && !removeOnly ? "border-brand bg-brand-soft text-brand" : "border-border bg-white text-brand hover:bg-brand-soft"}`}
+        icon={removeOnly ? null : saved ? <BookmarkCheck className="size-4" aria-hidden /> : <Bookmark className="size-4" aria-hidden />}
       >
-        {removeOnly ? null : saved ? <BookmarkCheck className="size-4" aria-hidden /> : <Bookmark className="size-4" aria-hidden />}
         {removeOnly ? labels.saved : saved ? labels.saved : labels.save}
-      </button>
+      </SaveSubmit>
     </form>
   );
 }

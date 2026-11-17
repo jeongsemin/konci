@@ -62,7 +62,7 @@
       "items": [
         {
           "title": "Clinic information",
-          "body": "Names, addresses and phone numbers come from Naver Maps search. Treatments, prices, hours and language support should be confirmed with the clinic."
+          "body": "Names, addresses and phone numbers come from Korea's public health insurance (HIRA) data, a few from Naver Maps search. Treatments, prices, hours and language support should be confirmed with the clinic."
         },
         {
           "title": "Visitor experiences",
@@ -160,7 +160,7 @@
     "breadcrumb": "Home  /  Search & compare",
     "title": "Results for “{q}”",
     "titleEmpty": "Search & compare clinics",
-    "subtitle": "Your search conditions are kept. Order follows Naver Maps search results.",
+    "subtitle": "Your search conditions are kept. By default, the closest matches to your search come first.",
     "filters": "Filters",
     "filtersShow": "Show",
     "filtersHide": "Hide",
@@ -238,7 +238,7 @@
       "checkTitle": "Before you choose",
       "checkBody": "Reviews are personal experiences. Confirm treatment suitability, total cost, side effects and language support with the clinic.",
       "rankTitle": "Search ranking",
-      "rankBody": "Results follow Naver Maps search order. There is no paid placement."
+      "rankBody": "By default, results are ordered by how closely they match your search. There is no paid placement."
     },
     "pager": {
       "label": "Pagination",
@@ -301,6 +301,7 @@
         "reviews": "Reviews {n}"
       },
       "infoEyebrow": "CLINIC INFO · BASED ON NAVER MAPS",
+      "infoEyebrowHira": "CLINIC INFO · BASED ON KOREAN PUBLIC DATA (HIRA)",
       "infoTitle": "What you need for your visit",
       "infoSubtitle": "Details can change, so confirm with the clinic before you go.",
       "address": "Address",
@@ -347,7 +348,8 @@
       "ctaButton": "Write a review",
       "ctaNote": "Your receipt is stored privately and used only for verification.",
       "sourceTitle": "Information source",
-      "sourceBody": "Name, address and phone number come from Naver Maps search and may change."
+      "sourceBody": "Name, address and phone number come from Naver Maps search and may change.",
+      "sourceBodyHira": "Name, address, phone number and departments come from the public data of Korea's Health Insurance Review & Assessment Service (HIRA) and may change."
     },
     "homepage": "Website",
     "hours": "Opening hours",
@@ -461,7 +463,7 @@
       "nickname": "Public nickname",
       "nicknameHelp": "Shown with your reviews. (1–30 characters)",
       "email": "Email",
-      "emailHelp": "Your Google account email. It is never shown publicly.",
+      "emailHelp": "The email you sign in with. It is never shown publicly.",
       "save": "Save changes",
       "saving": "Saving…",
       "saved": "Saved.",
@@ -514,7 +516,7 @@
         "Your receipt photos and the text read from them",
         "Your reports, correction requests and clinic manager applications, with their proof documents"
       ],
-      "note": "Your Google account itself is not affected. To use KONCI again you will sign up from scratch.",
+      "note": "Your Google or email account itself is not affected. To use KONCI again you will sign up from scratch.",
       "admin": "Administrators can't delete their account. Ask another administrator to remove your role first.",
       "confirm": "I understand that this cannot be undone.",
       "button": "Delete my account",
@@ -594,7 +596,7 @@
     "members": {
       "breadcrumb": "Admin / Members",
       "title": "Members",
-      "subtitle": "Everyone who has signed in with Google. Country, age group and gender are optional, self-reported and visible only here.",
+      "subtitle": "Everyone who has signed in with Google or email. Country, age group and gender are optional, self-reported and visible only here.",
       "back": "Back to review queue",
       "stats": {
         "total": "All members",
