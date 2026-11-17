@@ -30,6 +30,10 @@ Next.js 16 서버 렌더링이 필요합니다(정적 내보내기 불가). 가�
 | `NAVER_SEARCH_CLIENT_ID` / `_SECRET` | 선택 | 네이버 클라우드 플랫폼 **NAVER API HUB**에서 발급(개발자센터는 2026-07-31부터 검색 키 신규 발급 종료). 없으면 심평원 데이터만 검색 |
 | `NAVER_SEARCH_API` | 선택 | 예전 개발자센터 키를 쓸 때만 `legacy` (2027-06-30까지) |
 | `CLOVA_OCR_INVOKE_URL` / `_SECRET` | 선택 | 없으면 모든 영수증이 수동 심사 |
+| `RESEND_API_KEY` | 권장 | resend.com > API Keys (Sending access). 없으면 메일을 보내지 않음 |
+| `ALERT_EMAIL_TO` | 권장 | 검토할 영수증이 오면 알림을 받을 관리자 주소(쉼표로 여러 개). 한 시간에 한 통까지 |
+| `ALERT_EMAIL_FROM` | 권장 | 보내는 주소, 예: `KONCI <alert@konci.kr>`. Resend에서 도메인을 인증한 뒤 설정. **이 값이 있어야 회원에게 승인·반려 결과 메일이 간다** |
+| `CRON_SECRET` | 예 | 영수증 자동 정리용 비밀값. 아무 긴 무작위 문자열(예: `openssl rand -hex 32`). Vercel이 예약 실행 때 자동으로 실어 보낸다 |
 
 `HIRA_SERVICE_KEY`는 본인 PC에서 병원 데이터를 가져올 때만 쓰므로 호스팅에는 넣지 않습니다.
 
@@ -51,12 +55,13 @@ Next.js 16 서버 렌더링이 필요합니다(정적 내보내기 불가). 가�
 
 - [ ] 심평원(공공데이터포털) 키로 `scripts/import-hira.ts`를 실행해 병원 목록을 채운다. 폐업 정보 반영을 위해 매월 다시 실행하는 것을 권장한다.
 
-## 5. 영수증 정리 예약
+## 5. 영수증 자동 정리
 
-후기가 없는 영수증 사진은 30일 뒤 지워야 합니다(개인정보처리방침에 적은 보관 기간).
+후기가 없는 영수증 사진은 30일 뒤 지워야 합니다(개인정보처리방침에 적은 보관 기간). `vercel.json`에 매일 03:00(한국 시간, Vercel 무료 플랜은 그 시각 전후 1시간 안)에 `/api/cron/purge-receipts`를 부르는 예약이 들어 있습니다.
 
-- [ ] `node --env-file=.env.local scripts/purge-receipts.ts --dry-run`으로 먼저 개수만 확인
-- [ ] 매일 한 번 `node --env-file=.env.local scripts/purge-receipts.ts`가 돌도록 예약(작업 스케줄러, cron, GitHub Actions 중 편한 것)
+- [ ] 환경 변수 `CRON_SECRET`을 넣었는지 확인(없으면 정리가 돌지 않는다)
+- [ ] 배포 후 Vercel 프로젝트 > Settings > Cron Jobs에 예약이 보이는지 확인. 같은 화면의 **Run**으로 한 번 돌려 보고 로그에 `deleted`가 찍히는지 본다
+- [ ] 필요하면 본인 PC에서 `node --env-file=.env.local scripts/purge-receipts.ts --dry-run`으로 지울 개수만 확인할 수 있다
 
 ## 6. 배포 직후 확인
 

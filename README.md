@@ -56,7 +56,8 @@ npm run dev                  # http://localhost:3000
 | `HIRA_SERVICE_KEY` / `HIRA_DETAIL_SERVICE_KEY` | 적재 시 | 공공데이터포털 병원정보·상세정보 서비스 일반 인증키(Decoding). 적재 스크립트만 씁니다 |
 | `NAVER_SEARCH_CLIENT_ID` / `NAVER_SEARCH_CLIENT_SECRET` | 선택 | 없으면 DB에 적재된 병원만 검색됩니다 |
 | `CLOVA_OCR_INVOKE_URL` / `CLOVA_OCR_SECRET` | 선택 | 없으면 모든 영수증이 수동 검토로 넘어갑니다 |
-| `RESEND_API_KEY` / `ALERT_EMAIL_TO` / `ALERT_EMAIL_FROM` | 선택 | 검토할 영수증이 올라오면 관리자에게 메일을 보냅니다(한 시간에 한 번까지). 받는 주소는 쉼표로 여러 개. 보내는 주소는 Resend에서 도메인을 인증한 뒤 설정하며, 없으면 Resend 가입 주소로만 보낼 수 있습니다 |
+| `RESEND_API_KEY` / `ALERT_EMAIL_TO` / `ALERT_EMAIL_FROM` | 선택 | 검토할 영수증이 올라오면 관리자에게 메일을 보냅니다(한 시간에 한 번까지). 받는 주소는 쉼표로 여러 개. 보내는 주소는 Resend에서 도메인을 인증한 뒤 설정하며, 없으면 Resend 가입 주소로만 보낼 수 있습니다. 보내는 주소가 설정되면 회원에게도 승인·반려 결과 메일이 갑니다 |
+| `CRON_SECRET` | 배포 시 | 매일 영수증을 정리하는 예약 작업(`vercel.json`)의 비밀값. 없으면 정리가 돌지 않습니다 |
 | `NEXT_PUBLIC_SITE_URL` | 배포 시 | canonical·사이트맵 기준 주소 (기본 `http://localhost:3000`) |
 | `NEXT_PUBLIC_CONTACT_EMAIL` | 배포 시 | 약관·방침에 표시되는 문의 연락처 (없으면 자리표시 주소) |
 
@@ -80,7 +81,7 @@ Supabase **SQL 편집기**에서 `supabase/migrations/`의 파일을 **번호 �
 | `0011_feedback` · `0012_feedback_private` | 건의사항 게시판, 작성자·관리자만 읽기 |
 | `0013_email_login` | 이름이 없는 가입(이메일 로그인)의 닉네임을 `Member 1a2b`처럼 임의로 부여 (이메일 앞부분이 후기에 노출되지 않게) |
 
-**영수증 정리:** `node --env-file=.env.local scripts/purge-receipts.ts [--dry-run]`은 후기가 없는 영수증을 30일 뒤 삭제합니다(심사 중은 제외). 배포 후 정기 실행에 등록해야 합니다. 배포 순서는 [DEPLOY.md](DEPLOY.md)에 정리했습니다.
+**영수증 정리:** `node --env-file=.env.local scripts/purge-receipts.ts [--dry-run]`은 후기가 없는 영수증을 30일 뒤 삭제합니다(심사 중은 제외). 배포하면 Vercel Cron이 매일 같은 일을 합니다(`CRON_SECRET` 필요). 배포 순서는 [DEPLOY.md](DEPLOY.md)에 정리했습니다.
 
 ### 3. 병원 데이터 적재 (심평원)
 

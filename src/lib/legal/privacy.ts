@@ -28,7 +28,7 @@ const ko: LegalDoc = {
         "후기·병원 정보의 게시, 병원별 평점 집계",
         "신고와 수정 요청의 처리, 병원 관리자 자격 확인",
         "서비스 개선을 위한 통계(개인을 식별할 수 없는 형태)",
-        "문의 응대와 공지",
+        "문의 응대와 공지, 영수증 확인 결과 안내 메일",
       ],
     },
     {
@@ -52,7 +52,7 @@ const ko: LegalDoc = {
       ],
       items: [
         "회원 정보와 후기: 회원 탈퇴 또는 삭제 요청 시까지",
-        "영수증 이미지와 판독 결과: 해당 후기가 게시되어 있는 동안입니다. 후기를 삭제하면 함께 삭제되고, 후기를 쓰지 않은 영수증은 업로드 30일 뒤(심사 중이면 심사가 끝난 뒤) 삭제됩니다. 같은 영수증의 재사용을 막기 위한 식별값(해시)만 더 오래 보관하며, 이 값으로는 영수증 내용을 알 수 없습니다",
+        "영수증 이미지와 심사 기록: 해당 후기가 게시되어 있는 동안입니다. 후기를 삭제하면 함께 삭제되고, 후기를 쓰지 않은 영수증은 업로드 30일 뒤(심사 중이면 심사가 끝난 뒤) 삭제됩니다. 같은 영수증의 재사용을 막기 위한 식별값(해시)만 더 오래 보관하며, 이 값으로는 영수증 내용을 알 수 없습니다",
         "관리자 신청 증빙 서류: 심사가 끝나고 관리자 자격이 유지되는 동안, 자격이 끝나면 파기",
         "법령에 따라 보관해야 하는 정보(예: 통신사실확인자료 등 접속 기록 3개월 이상): 해당 법령이 정한 기간",
       ],
@@ -69,6 +69,7 @@ const ko: LegalDoc = {
       items: [
         "Supabase Inc.: 회원 인증, 데이터베이스와 파일(영수증 이미지 등) 저장",
         "Google LLC: 로그인(Google 계정 인증)",
+        "Resend, Inc.: 메일 발송(영수증 확인 결과 안내, 받는 분의 이메일 주소)",
         "웹 호스팅 사업자: 서비스 서버 운영(배포 후 확정되는 대로 이 항목에 기재합니다)",
         "이전 항목은 위 각 업체에 맡기는 정보와 같으며, 이전 시기와 방법은 서비스 이용 시 네트워크를 통한 전송입니다. 국외 이전을 원하지 않으면 서비스 이용을 중단하고 탈퇴를 요청할 수 있습니다.",
       ],
@@ -136,7 +137,7 @@ const en: LegalDoc = {
         "To publish reviews and clinic information and to calculate clinic ratings",
         "To handle reports and correction requests and to check clinic manager eligibility",
         "To improve the Service with statistics that do not identify you",
-        "To answer questions and send notices",
+        "To answer questions and send notices, including an email when your receipt has been checked",
       ],
     },
     {
@@ -158,7 +159,7 @@ const en: LegalDoc = {
       paragraphs: ["We delete personal information without delay once its purpose is fulfilled. The following are kept for the periods shown."],
       items: [
         "Account details and reviews: until you leave or ask us to delete them",
-        "Receipt images and reading results: while the related review is published. They are deleted with the review, and receipts that never led to a review are deleted 30 days after upload (once the check is finished, if it was pending). Only a hash that stops the same receipt being reused is kept longer; it does not reveal what the receipt shows",
+        "Receipt images and check records: while the related review is published. They are deleted with the review, and receipts that never led to a review are deleted 30 days after upload (once the check is finished, if it was pending). Only a hash that stops the same receipt being reused is kept longer; it does not reveal what the receipt shows",
         "Manager proof documents: while the review is pending and the manager role lasts; deleted when the role ends",
         "Information we must keep by law (for example access logs for at least three months): for the period the law sets",
       ],
@@ -173,6 +174,7 @@ const en: LegalDoc = {
       items: [
         "Supabase Inc.: sign-in, database and file storage (including receipt images)",
         "Google LLC: sign-in (Google account authentication)",
+        "Resend, Inc.: sending email (the result of your receipt check, to your email address)",
         "Web hosting provider: running the Service (this entry will be completed once hosting is finalized)",
         "The information transferred is what is listed for each company above, sent over the network when you use the Service. If you do not want your information handled abroad, stop using the Service and ask us to delete your account.",
       ],
@@ -238,7 +240,7 @@ const ja: LegalDoc = {
         "口コミ・医療機関情報の掲載と、医療機関ごとの評価の集計",
         "通報・修正リクエストの処理、医療機関管理者の資格確認",
         "個人を特定できない形での統計によるサービス改善",
-        "お問い合わせ対応とお知らせ",
+        "お問い合わせ対応とお知らせ(領収書の確認結果のメールを含む)",
       ],
     },
     {
@@ -260,7 +262,7 @@ const ja: LegalDoc = {
       paragraphs: ["個人情報は、利用目的を達成した後、遅滞なく破棄します。ただし次の情報は、記載の期間保管します。"],
       items: [
         "会員情報と口コミ:退会または削除の依頼まで",
-        "領収書画像と読み取り結果:該当の口コミが掲載されている間。口コミを削除すると一緒に削除され、口コミを書かなかった領収書はアップロードの30日後(審査中の場合は審査の終了後)に削除されます。同じ領収書の再利用を防ぐ識別値(ハッシュ)のみ、より長く保管します。この値から領収書の内容は分かりません",
+        "領収書画像と審査記録:該当の口コミが掲載されている間。口コミを削除すると一緒に削除され、口コミを書かなかった領収書はアップロードの30日後(審査中の場合は審査の終了後)に削除されます。同じ領収書の再利用を防ぐ識別値(ハッシュ)のみ、より長く保管します。この値から領収書の内容は分かりません",
         "管理者申請の証明書類:審査中および管理者資格が続く間。資格が終了したら破棄",
         "法令により保管が必要な情報(例:アクセス記録を3か月以上):法令が定める期間",
       ],
@@ -275,6 +277,7 @@ const ja: LegalDoc = {
       items: [
         "Supabase Inc.:会員認証、データベースとファイル(領収書画像など)の保管",
         "Google LLC:ログイン(Googleアカウント認証)",
+        "Resend, Inc.:メール送信(領収書の確認結果のお知らせ、受信者のメールアドレス)",
         "Webホスティング事業者:サービスサーバーの運営(確定次第、この項目に記載します)",
         "移転される情報は上記各社に委ねる情報と同じで、サービス利用時にネットワークを通じて送信されます。国外での取り扱いを望まない場合は、利用を中止し、退会を依頼してください。",
       ],
@@ -340,7 +343,7 @@ const zh: LegalDoc = {
         "发布评价和医院信息,统计各医院的评分",
         "处理举报和更正请求,确认医院管理员资格",
         "以无法识别个人的统计数据改进服务",
-        "答复咨询和发送通知",
+        "答复咨询和发送通知(包括收据审核结果邮件)",
       ],
     },
     {
@@ -362,7 +365,7 @@ const zh: LegalDoc = {
       paragraphs: ["个人信息在达成使用目的后会立即销毁。以下信息按所列期限保存。"],
       items: [
         "会员信息与评价:直至您退出或要求删除",
-        "收据图片与识别结果:在相关评价发布期间。删除评价时一并删除;未用于撰写评价的收据在上传 30 天后删除(审核中的在审核结束后)。仅保留用于防止同一收据重复使用的标识值(哈希),保存时间更长,无法据此得知收据内容",
+        "收据图片与审核记录:在相关评价发布期间。删除评价时一并删除;未用于撰写评价的收据在上传 30 天后删除(审核中的在审核结束后)。仅保留用于防止同一收据重复使用的标识值(哈希),保存时间更长,无法据此得知收据内容",
         "管理员申请的证明文件:审核期间及管理员资格持续期间,资格终止后销毁",
         "依法必须保存的信息(例如访问记录至少三个月):法律规定的期限",
       ],
@@ -377,6 +380,7 @@ const zh: LegalDoc = {
       items: [
         "Supabase Inc.:会员认证、数据库与文件(含收据图片)存储",
         "Google LLC:登录(Google 账号认证)",
+        "Resend, Inc.:发送邮件(收据审核结果通知,收件人的邮箱地址)",
         "网站托管服务商:运行服务器(托管确定后会在此补充)",
         "传输的信息与上述各公司所处理的信息相同,在您使用本服务时通过网络传送。如不希望信息在境外处理,请停止使用并要求注销账号。",
       ],

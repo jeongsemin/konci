@@ -1,12 +1,15 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { hasLocale } from "@/i18n/config";
 import { checkRoleChange, parseEmail, type RoleError } from "@/lib/admin-roles";
 import { getProfile } from "@/lib/auth";
 import { hasRoomForManager } from "@/lib/manager-input";
 import { pickSuspendTargets } from "@/lib/member-filters";
+import { memberMailConfigured, sendDecisionMail } from "@/lib/receipt-alert";
 import { removeStored } from "@/lib/receipt-purge";
+import { siteUrl } from "@/lib/seo";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -23,7 +26,8 @@ export async function decideReceipt(form: FormData) {
   const reason = String(form.get("reason") ?? "").replace(/\s+/g, " ").trim().slice(0, 200);
 
   // Only a still-pending receipt can be decided, so two admins can't overwrite each other.
-  const { error } = await createAdminClient()
+  const admin = createAdminClient();
+  const { data: decided, error } = await admin
     .from("receipts")
     .update({
       status: decision,
@@ -32,8 +36,27 @@ export async function decideReceipt(form: FormData) {
       reviewed_at: new Date().toISOString(),
     })
     .eq("id", receiptId)
-    .eq("status", "pending");
+    .eq("status", "pending")
+    .select("user_id, hospital_id, hospitals(name, name_en)");
   if (error) throw new Error("update failed");
+
+  // Tell the member, after the response so the admin isn't kept waiting.
+  const row = decided?.[0];
+  if (row && memberMailConfigured()) {
+    after(async () => {
+      const { data: user } = await admin.auth.admin.getUserById(row.user_id);
+      const hospital = Array.isArray(row.hospitals) ? row.hospitals[0] : row.hospitals;
+      if (!user?.user?.email || !hospital) return;
+      await sendDecisionMail(user.user.email, {
+        decision,
+        hospitalId: row.hospital_id,
+        hospitalName: hospital.name,
+        hospitalNameEn: hospital.name_en,
+        reason: decision === "rejected" ? reason : null,
+        siteUrl: siteUrl(),
+      });
+    });
+  }
 
   const lang = String(form.get("lang") ?? "");
   revalidatePath(`/${hasLocale(lang) ? lang : "en"}/admin`);
