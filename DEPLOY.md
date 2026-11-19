@@ -31,7 +31,7 @@ Next.js 16 서버 렌더링이 필요합니다(정적 내보내기 불가). 가�
 | `NAVER_SEARCH_API` | 선택 | 예전 개발자센터 키를 쓸 때만 `legacy` (2027-06-30까지) |
 | `CLOVA_OCR_INVOKE_URL` / `_SECRET` | 선택 | 없으면 모든 영수증이 수동 심사 |
 | `RESEND_API_KEY` | 권장 | resend.com > API Keys (Sending access). 없으면 메일을 보내지 않음 |
-| `ALERT_EMAIL_TO` | 권장 | 영수증·수정 요청·신고·병원 관리자 신청·건의사항이 들어오면 알림을 받을 관리자 주소(쉼표로 여러 개). 종류마다 한 시간에 한 통까지 |
+| `ALERT_EMAIL_TO` | 권장 | 영수증·수정 요청·신고·병원 관리자 신청·건의사항이 들어오거나 서버 오류가 나면 알림을 받을 관리자 주소(쉼표로 여러 개). 종류마다(오류는 같은 오류마다) 한 시간에 한 통까지 |
 | `ALERT_EMAIL_FROM` | 권장 | 보내는 주소, 예: `KONCI <alert@konci.kr>`. Resend에서 도메인을 인증한 뒤 설정. **이 값이 있어야 회원에게 승인·반려 결과 메일이 간다** |
 | `CRON_SECRET` | 예 | 영수증 자동 정리용 비밀값. 아무 긴 무작위 문자열(예: `openssl rand -hex 32`). Vercel이 예약 실행 때 자동으로 실어 보낸다 |
 

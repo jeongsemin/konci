@@ -126,6 +126,11 @@ async function send(to: string[], subject: string, text: string, label: string):
   }
 }
 
+/** A mail to the administrators (ALERT_EMAIL_TO). */
+export async function sendAdminMail(subject: string, text: string, label: string): Promise<void> {
+  await send(recipients(process.env.ALERT_EMAIL_TO), subject, text, label);
+}
+
 export async function sendQueueAlert(alert: QueueAlert): Promise<void> {
   const { subject, text } = buildQueueAlert(alert);
   await send(recipients(process.env.ALERT_EMAIL_TO), subject, text, `${alert.kind} alert`);
