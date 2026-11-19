@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { hasLocale } from "@/i18n/config";
+import { koReportReason, notifyAdmins } from "@/lib/admin-notify";
 import { parseReportInput } from "@/lib/report-input";
 import { createClient } from "@/lib/supabase/server";
 
@@ -28,7 +29,7 @@ export async function submitReport(_prev: ReportState, form: FormData): Promise<
   const { data: suspension } = await supabase.from("suspensions").select("user_id").eq("user_id", me).maybeSingle();
   if (suspension) return { error: "suspended" };
 
-  const { data: review } = await supabase.from("reviews").select("user_id").eq("id", input.reviewId).maybeSingle();
+  const { data: review } = await supabase.from("reviews").select("user_id, hospitals(name)").eq("id", input.reviewId).maybeSingle();
   if (!review) return { error: "invalid" }; // gone, or hidden from this member
   if (review.user_id === me) return { error: "own" };
 
@@ -44,6 +45,11 @@ export async function submitReport(_prev: ReportState, form: FormData): Promise<
     .from("review_reports")
     .insert({ review_id: input.reviewId, reporter_id: me, reason: input.reason, detail: input.detail });
   if (error) return { error: error.code === "23505" ? "already" : "generic" };
+  const hospital = Array.isArray(review.hospitals) ? review.hospitals[0] : review.hospitals;
+  notifyAdmins("report", [
+    ...(hospital ? ([["병원", hospital.name]] as [string, string][]) : []),
+    ["사유", koReportReason(input.reason)],
+  ]);
 
   const lang = String(form.get("lang") ?? "");
   if (hasLocale(lang)) revalidatePath(`/${lang}/reviews/${input.reviewId}`);

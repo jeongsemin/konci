@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { hasLocale } from "@/i18n/config";
+import { koFeedbackCategory, notifyAdmins } from "@/lib/admin-notify";
 import { getProfile } from "@/lib/auth";
 import { DAILY_POST_LIMIT, isUuid, parseFeedbackInput, parseReplyInput } from "@/lib/feedback-input";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -40,6 +41,7 @@ export async function submitFeedback(_prev: FeedbackState, form: FormData): Prom
 
   const { error } = await supabase.from("feedback_posts").insert({ user_id: me, ...input });
   if (error) return { error: "generic" };
+  notifyAdmins("feedback", [["분류", koFeedbackCategory(input.category)]]);
 
   refresh(form);
   return { ok: true };

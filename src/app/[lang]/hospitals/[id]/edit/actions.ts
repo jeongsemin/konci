@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { hasLocale } from "@/i18n/config";
+import { koEditField, notifyAdmins } from "@/lib/admin-notify";
 import { DAILY_LIMIT, MANAGER_DAILY_LIMIT, fieldsFor, isSameValue, parseEditInput } from "@/lib/edit-request";
 import { createClient } from "@/lib/supabase/server";
 
@@ -40,7 +41,7 @@ export async function submitEditRequest(_prev: EditState, form: FormData): Promi
 
   const { data: hospital } = await supabase
     .from("hospitals")
-    .select("phone, homepage, name_en, name_ja, name_zh, hours_note, closed_reason")
+    .select("name, phone, homepage, name_en, name_ja, name_zh, hours_note, closed_reason")
     .eq("id", input.hospitalId)
     .maybeSingle();
   if (!hospital) return { error: "invalid" };
@@ -60,6 +61,11 @@ export async function submitEditRequest(_prev: EditState, form: FormData): Promi
     .from("hospital_edit_requests")
     .insert({ hospital_id: input.hospitalId, requester_id: me, field: input.field, value: input.value, note: input.note });
   if (error) return { error: error.code === "23505" ? "duplicate" : "generic" };
+  notifyAdmins("edit", [
+    ["병원", hospital.name],
+    ["항목", koEditField(input.field)],
+    ...(isManager ? ([["요청자", "이 병원의 관리자"]] as [string, string][]) : []),
+  ]);
 
   const lang = String(form.get("lang") ?? "");
   if (hasLocale(lang)) revalidatePath(`/${lang}/hospitals/${input.hospitalId}/edit`);

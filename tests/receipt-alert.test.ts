@@ -1,6 +1,15 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { alertConfigured, buildDecisionMail, buildReceiptAlert, memberMailConfigured, recipients, shouldAlert } from "../src/lib/receipt-alert.ts";
+import {
+  QUEUES,
+  alertConfigured,
+  buildDecisionMail,
+  buildQueueAlert,
+  memberMailConfigured,
+  recipients,
+  shouldAlert,
+  type QueueKind,
+} from "../src/lib/receipt-alert.ts";
 
 describe("receipt alert", () => {
   it("is on only when both the key and the address are set", () => {
@@ -10,9 +19,10 @@ describe("receipt alert", () => {
     assert.equal(alertConfigured({ RESEND_API_KEY: "k", ALERT_EMAIL_TO: "a@x.kr" }), true);
   });
 
-  it("mails only for the first receipt waiting within the hour", () => {
+  it("mails only for the first item of a kind waiting within the hour (the new one is counted)", () => {
     assert.equal(shouldAlert(0), true);
-    assert.equal(shouldAlert(1), false);
+    assert.equal(shouldAlert(1), true);
+    assert.equal(shouldAlert(2), false);
     assert.equal(shouldAlert(5), false);
   });
 
@@ -22,8 +32,9 @@ describe("receipt alert", () => {
   });
 
   it("names the clinic, the queue size and the admin page, in Korea time", () => {
-    const mail = buildReceiptAlert({
-      hospitalName: "데이뷰의원\r\nBcc: x@y.z",
+    const mail = buildQueueAlert({
+      kind: "receipt",
+      details: [["병원", "데이뷰의원\r\nBcc: x@y.z"]],
       pending: 3,
       siteUrl: "https://konci.kr/",
       now: new Date("2026-11-17T01:00:00Z"),
@@ -33,6 +44,32 @@ describe("receipt alert", () => {
     assert.match(mail.text, /확인 대기: 3건/);
     assert.match(mail.text, /https:\/\/konci\.kr\/ko\/admin\n/);
     assert.match(mail.text, /오전 10:00/);
+    assert.match(mail.text, /1~2일/);
+  });
+
+  it("has a subject, details and the right admin page for each kind", () => {
+    const at = (kind: QueueKind, details: [string, string][]) => buildQueueAlert({ kind, details, pending: 2, siteUrl: "https://konci.kr" });
+    const edit = at("edit", [["병원", "데이뷰의원"], ["항목", "전화번호"]]);
+    assert.equal(edit.subject, "[KONCI] 확인할 수정 요청 2건");
+    assert.match(edit.text, /항목: 전화번호/);
+    assert.match(edit.text, /konci\.kr\/ko\/admin\/edits\n/);
+    assert.match(at("report", [["사유", "광고·홍보"]]).text, /konci\.kr\/ko\/admin\/reports\n/);
+    assert.match(at("manager", [["병원", "데이뷰의원"]]).subject, /병원 관리자 신청 2건/);
+    assert.match(at("feedback", [["분류", "오류"]]).text, /konci\.kr\/ko\/feedback\n/);
+    assert.doesNotMatch(edit.text, /1~2일/);
+  });
+
+  it("knows the table and waiting status of every queue", () => {
+    assert.deepEqual(
+      Object.entries(QUEUES).map(([k, q]) => [k, q.table, q.status]),
+      [
+        ["receipt", "receipts", "pending"],
+        ["edit", "hospital_edit_requests", "open"],
+        ["report", "review_reports", "open"],
+        ["manager", "hospital_managers", "pending"],
+        ["feedback", "feedback_posts", "open"],
+      ],
+    );
   });
 
   it("mails members only once a sender on a verified domain is set", () => {

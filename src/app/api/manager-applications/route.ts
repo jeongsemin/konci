@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { notifyAdmins } from "@/lib/admin-notify";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { MAX_PENDING_PER_USER, PROOF_MIME, hasRoomForManager, isAcceptableProofSize, parseManagerInput, sniffProof } from "@/lib/manager-input";
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest) {
   const { data: suspension } = await admin.from("suspensions").select("user_id").eq("user_id", me).maybeSingle();
   if (suspension) return NextResponse.json({ error: "suspended" }, { status: 403 });
 
-  const { data: hospital } = await admin.from("hospitals").select("id").eq("id", input.hospitalId).maybeSingle();
+  const { data: hospital } = await admin.from("hospitals").select("id, name").eq("id", input.hospitalId).maybeSingle();
   if (!hospital) return NextResponse.json({ error: "invalid" }, { status: 400 });
 
   // One waiting or approved application per member and hospital (the database enforces it too).
@@ -67,6 +68,7 @@ export async function POST(request: NextRequest) {
     await admin.storage.from("manager-proofs").remove([proofPath]);
     return NextResponse.json({ error: error.code === "23505" ? "already" : "generic" }, { status: error.code === "23505" ? 409 : 500 });
   }
+  notifyAdmins("manager", [["병원", hospital.name]]);
 
   return NextResponse.json({ ok: true });
 }

@@ -1,6 +1,8 @@
-// Receipt emails, sent through Resend (https://resend.com). Nothing is sent without RESEND_API_KEY.
-//   - To the administrators (ALERT_EMAIL_TO): a receipt is waiting. At most one mail an hour: a new receipt
-//     sends one only when no other receipt has waited since an hour ago. Names the clinic and the queue size, never the member.
+// Emails, sent through Resend (https://resend.com). Nothing is sent without RESEND_API_KEY.
+//   - To the administrators (ALERT_EMAIL_TO): something waits for them (a receipt, an edit request, a report,
+//     a clinic manager application or a suggestion). At most one mail an hour per kind: a new item sends one only
+//     when no other item of that kind has waited since an hour ago. Names the clinic or the kind of request
+//     and the queue size, never the member.
 //   - To the member: the receipt was approved or rejected. Only sent once ALERT_EMAIL_FROM is set, because
 //     Resend's default sender (onboarding@resend.dev) can only mail the address the Resend account signed up with;
 //     verify the domain in Resend first. The member's language isn't stored, so the mail is in all four languages
@@ -21,9 +23,12 @@ export function memberMailConfigured(env: Env = process.env): boolean {
   return Boolean(env.RESEND_API_KEY?.trim() && env.ALERT_EMAIL_FROM?.trim());
 }
 
-/** Whether this upload should send a mail: only the first receipt waiting within the last hour does. */
-export function shouldAlert(otherRecentPending: number): boolean {
-  return otherRecentPending === 0;
+/**
+ * Whether a new item should send a mail. `recentWaiting` counts the waiting items of that kind created
+ * within the last hour, the new one included: only the first of them sends one.
+ */
+export function shouldAlert(recentWaiting: number): boolean {
+  return recentWaiting <= 1;
 }
 
 export function recipients(to: string | undefined): string[] {
@@ -33,22 +38,36 @@ export function recipients(to: string | undefined): string[] {
 const oneLine = (s: string, max: number) => s.replace(/[\r\n]+/g, " ").trim().slice(0, max);
 const origin = (siteUrl: string) => siteUrl.replace(/\/+$/, "");
 
-export type ReceiptAlert = { hospitalName: string; pending: number; siteUrl: string; now?: Date };
+/** What waits for an administrator: where it is stored, which status means "waiting", and where it is handled. */
+export type QueueKind = "receipt" | "edit" | "report" | "manager" | "feedback";
+export const QUEUES: Record<QueueKind, { table: string; status: string; name: string; headline: string; path: string; note?: string }> = {
+  receipt: { table: "receipts", status: "pending", name: "영수증", headline: "새 영수증이 올라왔어요.", path: "/ko/admin", note: "이용자에게는 보통 1~2일 안에 확인한다고 안내하고 있어요." },
+  edit: { table: "hospital_edit_requests", status: "open", name: "수정 요청", headline: "병원 정보 수정 요청이 들어왔어요.", path: "/ko/admin/edits" },
+  report: { table: "review_reports", status: "open", name: "신고", headline: "후기 신고가 들어왔어요.", path: "/ko/admin/reports" },
+  manager: { table: "hospital_managers", status: "pending", name: "병원 관리자 신청", headline: "병원 관리자 신청이 들어왔어요.", path: "/ko/admin/managers" },
+  feedback: { table: "feedback_posts", status: "open", name: "건의사항", headline: "새 건의사항이 올라왔어요.", path: "/ko/feedback" },
+};
 
-export function buildReceiptAlert({ hospitalName, pending, siteUrl, now = new Date() }: ReceiptAlert): { subject: string; text: string } {
+/** Label and value lines for the mail, e.g. ["병원", "데이뷰의원"]. Never anything about the member. */
+export type AlertDetails = [label: string, value: string][];
+
+export type QueueAlert = { kind: QueueKind; details: AlertDetails; pending: number; siteUrl: string; now?: Date };
+
+export function buildQueueAlert({ kind, details, pending, siteUrl, now = new Date() }: QueueAlert): { subject: string; text: string } {
+  const q = QUEUES[kind];
   const when = new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", dateStyle: "medium", timeStyle: "short" }).format(now);
   return {
-    subject: `[KONCI] 확인할 영수증 ${pending}건`,
+    subject: `[KONCI] 확인할 ${q.name} ${pending}건`,
     text: [
-      `새 영수증이 올라왔어요. (${when})`,
+      `${q.headline} (${when})`,
       "",
-      `병원: ${oneLine(hospitalName, 100)}`,
+      ...details.map(([label, value]) => `${label}: ${oneLine(value, 100)}`),
       `확인 대기: ${pending}건`,
       "",
-      `확인하기: ${origin(siteUrl)}/ko/admin`,
+      `확인하기: ${origin(siteUrl)}${q.path}`,
       "",
-      "이용자에게는 보통 1~2일 안에 확인한다고 안내하고 있어요.",
-      "이 알림은 한 시간에 한 번까지만 보내요. 그사이 올라온 영수증은 대기 건수에 포함됩니다.",
+      ...(q.note ? [q.note] : []),
+      `이 알림은 종류마다 한 시간에 한 번까지만 보내요. 그사이 들어온 ${q.name}은(는) 대기 건수에 포함됩니다.`,
     ].join("\n"),
   };
 }
@@ -107,9 +126,9 @@ async function send(to: string[], subject: string, text: string, label: string):
   }
 }
 
-export async function sendReceiptAlert(alert: ReceiptAlert): Promise<void> {
-  const { subject, text } = buildReceiptAlert(alert);
-  await send(recipients(process.env.ALERT_EMAIL_TO), subject, text, "receipt alert");
+export async function sendQueueAlert(alert: QueueAlert): Promise<void> {
+  const { subject, text } = buildQueueAlert(alert);
+  await send(recipients(process.env.ALERT_EMAIL_TO), subject, text, `${alert.kind} alert`);
 }
 
 export async function sendDecisionMail(to: string, mail: DecisionMail): Promise<void> {
